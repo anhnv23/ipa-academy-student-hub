@@ -3,6 +3,7 @@ import "./globals.css";
 import "./language.css";
 import "./classes-view.css";
 import "./schedule-enhancements.css";
+import "./account-management.css";
 
 export const metadata: Metadata = {
   title: "IPA Academy Student HUB",

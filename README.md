@@ -1,6 +1,7 @@
 # IPA Academy Student HUB — GitHub + Netlify + Supabase
 
 Hướng dẫn go-live đầy đủ nằm tại **`GO-LIVE-GUIDE.md`**.
+Thiết lập Admin mặc định và quản lý username nằm tại **`ADMIN-ACCOUNT-SETUP.md`**.
 
 Bản triển khai theo kiến trúc của Bee: mã nguồn Next.js nằm trên GitHub, Netlify tự build/deploy, Supabase cung cấp Auth, PostgreSQL, Row Level Security và Storage dùng chung.
 
@@ -55,11 +56,11 @@ Không commit `.env.local`; file đã nằm trong `.gitignore`.
 Vào **Authentication → Users → Add user**, tạo người dùng bằng email/mật khẩu. Sao chép UUID từng user, rồi chạy:
 
 ```sql
-insert into public.profiles (id, full_name, role)
+insert into public.profiles (id, username, full_name, role)
 values
-  ('UUID_ADMIN', 'IPA Admin', 'admin'),
-  ('UUID_GIAO_VIEN', 'Cô Mai Anh', 'teacher'),
-  ('UUID_HOC_VIEN', 'Nguyễn Minh Anh', 'student');
+  ('UUID_ADMIN', 'admin', 'IPA Admin', 'admin'),
+  ('UUID_GIAO_VIEN', 'teacher01', 'Cô Mai Anh', 'teacher'),
+  ('UUID_HOC_VIEN', 'student01', 'Nguyễn Minh Anh', 'student');
 ```
 
 Mỗi tài khoản phải có đúng một dòng trong `profiles`. Role chỉ nhận `admin`, `teacher`, `student`. Đổi quyền bằng:
@@ -90,7 +91,7 @@ Trước `git add`, kiểm tra `.env.local` không xuất hiện trong `git stat
 1. Netlify → **Add new project → Import an existing project**.
 2. Chọn GitHub và repository `ipa-student-hub`.
 3. `netlify.toml` đặt Build command `npm run build`, Publish directory `.next`, Node `22`.
-4. **Project configuration → Environment variables**: thêm `NEXT_PUBLIC_SUPABASE_URL` và `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+4. **Project configuration → Environment variables**: thêm `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` và secret `SUPABASE_SERVICE_ROLE_KEY`.
 5. Chọn **Deploy site**. Mỗi lần push nhánh `main`, Netlify tự build/phát hành.
 
 Sau khi đổi biến môi trường, dùng **Deploys → Trigger deploy → Clear cache and deploy site**.

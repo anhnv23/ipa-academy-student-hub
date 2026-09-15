@@ -7,6 +7,7 @@ create type public.workflow_status as enum ('draft','open','submitted','graded',
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null,
+  username text not null unique check (username ~ '^[a-z0-9._-]{3,40}$'),
   role public.app_role not null default 'student',
   phone text, student_code text unique,
   created_at timestamptz not null default now()

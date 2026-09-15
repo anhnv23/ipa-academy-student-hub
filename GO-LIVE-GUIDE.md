@@ -21,11 +21,11 @@ Tạo tài khoản GitHub, Netlify và Supabase. Cài Node.js 22 và Git trên m
 3. SQL Editor:
 
 ```sql
-insert into public.profiles (id, full_name, role)
+insert into public.profiles (id, username, full_name, role)
 values
-  ('UUID_ADMIN', 'IPA Admin', 'admin'),
-  ('UUID_TEACHER', 'Cô Mai Anh', 'teacher'),
-  ('UUID_STUDENT', 'Nguyễn Minh Anh', 'student');
+  ('UUID_ADMIN', 'admin', 'IPA Admin', 'admin'),
+  ('UUID_TEACHER', 'teacher01', 'Cô Mai Anh', 'teacher'),
+  ('UUID_STUDENT', 'student01', 'Nguyễn Minh Anh', 'student');
 ```
 
 Role chỉ nhận `admin`, `teacher`, `student`. Mỗi Auth user phải có đúng một profile cùng UUID.
@@ -45,9 +45,10 @@ Supabase → **Project Settings → API**. Sao chép Project URL và anon/publis
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://PROJECT-REF.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_ANON_OR_PUBLISHABLE_KEY
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
 ```
 
-Không dùng `service_role` trong frontend, GitHub hoặc biến `NEXT_PUBLIC_*`. `.env.local` đã được `.gitignore` loại trừ.
+`service_role` chỉ dùng bởi script khởi tạo và Netlify Function. Không commit `.env.local`, không đặt tiền tố `NEXT_PUBLIC_` cho key này.
 
 ## E. Kiểm tra local
 
@@ -89,10 +90,11 @@ Trong `git status`, tuyệt đối không được có `.env.local`.
 4. **Project configuration → Environment variables** thêm:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (đánh dấu secret/sensitive)
 5. Chọn **Deploy site**. Chờ trạng thái **Published** rồi mở URL `https://TEN-SITE.netlify.app`.
 6. Nếu vừa sửa biến môi trường: **Deploys → Trigger deploy → Clear cache and deploy site**.
 
-Không cần đưa mật khẩu database hay `service_role` key lên Netlify.
+Không đưa mật khẩu database lên Netlify. `service_role` chỉ lưu dưới dạng biến bí mật để Function tạo tài khoản; không bao giờ đưa xuống frontend.
 
 ## H. Khai báo URL trong Supabase
 

@@ -2,7 +2,7 @@
   "name": "ipa-academy-student-hub",
   "version": "1.0.0",
   "private": true,
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
+  "scripts": { "dev": "next dev", "build": "next build", "start": "next start", "seed:admin": "node --env-file=.env.local scripts/create-default-admin.mjs" },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
     "lucide-react": "^0.468.0",
