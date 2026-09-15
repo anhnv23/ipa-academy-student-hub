@@ -1,0 +1,4 @@
+.floating-language{position:fixed;z-index:100;right:22px;bottom:22px;background:#fff;border:1px solid #dbe4ef;border-radius:12px;padding:4px;display:flex;box-shadow:0 10px 30px #11335c25}
+.floating-language button{border:0;background:transparent;color:#73849a;font-size:12px;font-weight:800;padding:8px 10px;border-radius:8px;cursor:pointer}
+.floating-language button.active{background:#0c4fb7;color:#fff}
+@media(max-width:760px){.floating-language{right:14px;bottom:70px}}
