@@ -1,6 +1,6 @@
 # IPA Academy Student HUB — GitHub + Netlify + Supabase
 
-Phiên bản 1.5.0: bổ sung công cụ reset có xác nhận dành cho Admin. Công cụ giữ nguyên Admin và cấu trúc Supabase, xóa toàn bộ dữ liệu/tài khoản còn lại rồi tạo 3 lớp, 15 học viên và 2 giáo viên có hồ sơ cùng tài khoản đăng nhập sử dụng được; chưa gán lớp theo yêu cầu.
+Phiên bản 1.5.1: loại bỏ công cụ reset khỏi ứng dụng. Tổng quan, lớp học, lịch, học viên, giáo viên, điểm danh và học phí đều đọc dữ liệu trực tiếp từ Supabase. Bộ dữ liệu ban đầu gồm 3 lớp, 15 học viên và 2 giáo viên được tạo một lần bằng GitHub Actions; chưa gán lớp theo yêu cầu.
 
 Hướng dẫn go-live đầy đủ nằm tại **`GO-LIVE-GUIDE.md`**.
 Thiết lập Admin mặc định và quản lý username nằm tại **`ADMIN-ACCOUNT-SETUP.md`**.
@@ -17,7 +17,7 @@ Bản triển khai theo kiến trúc của Bee: mã nguồn Next.js nằm trên 
 - Học viên: xem/nộp bài, xem tiến độ, gửi đơn xin nghỉ.
 - Schema quan hệ, RLS và bucket riêng tư `homework` trong `supabase/schema.sql`.
 
-> Giao diện có dữ liệu minh họa để xem bố cục. Đăng nhập và nền tảng dữ liệu chung đã nối Supabase; khi vận hành, thay các mảng minh họa trong `app/page.tsx` bằng truy vấn các bảng tương ứng.
+> Các màn hình quản trị chính sử dụng dữ liệu Supabase, không dùng số lượng học viên/lớp hoặc danh sách mẫu cố định.
 
 ## 1. Chạy trên máy tính
 

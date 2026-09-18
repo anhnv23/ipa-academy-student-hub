@@ -53,16 +53,8 @@ import {
   TeacherClasses,
   TuitionManagement,
 } from "./role-features";
-import {
-  AdminClassHub,
-  AdminOverviewV14,
-  CenterCalendarV14,
-  StaffV14,
-  StudentManagementV14,
-  TuitionV14,
-} from "./admin-v14";
 import { StaffManagementLive, StudentManagementLive } from "./admin-live";
-import { SampleDataReset } from "./sample-reset";
+import {AdminOverviewDb,AdminClassHubDb,CenterCalendarDb,TuitionDb} from "./admin-db-views";
 import { AppRole, getProfile, supabase } from "../lib/supabase";
 
 type Role = "admin" | "teacher" | "student";
@@ -527,11 +519,11 @@ export default function HomePage() {
               </div>
             </section>
           )}
-          {role === "admin" && view === "overview" && <><AdminOverviewV14 /><SampleDataReset /></>}
-          {role === "admin" && view === "classes" && <AdminClassHub />}
-          {role === "admin" && view === "calendar" && <CenterCalendarV14 />}
+          {role === "admin" && view === "overview" && <AdminOverviewDb />}
+          {role === "admin" && view === "classes" && <AdminClassHubDb />}
+          {role === "admin" && view === "calendar" && <CenterCalendarDb />}
           {role === "admin" && view === "students" && <StudentManagementLive />}
-          {role === "admin" && view === "tuition" && <TuitionV14 />}
+          {role === "admin" && view === "tuition" && <TuitionDb />}
           {role === "admin" && view === "staff" && <StaffManagementLive />}
           {role === "teacher" && view === "overview" && (
             <TeacherOverview
