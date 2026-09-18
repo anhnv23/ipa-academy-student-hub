@@ -1,4 +1,4 @@
-# Hướng dẫn cập nhật IPA Academy Student HUB v1.5.1
+# Hướng dẫn cập nhật IPA Academy Student HUB v1.5.2
 
 Áp dụng cho dự án đã kết nối theo mô hình **GitHub → Netlify → Supabase**.
 
