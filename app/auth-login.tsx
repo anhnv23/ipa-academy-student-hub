@@ -1,30 +1,39 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { LockKeyhole, Mail } from "lucide-react";
+import { GraduationCap, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { AppRole, getProfile, isSupabaseConfigured, supabase } from "../lib/supabase";
 
-export function AuthLogin({ onLogin }: { onLogin: (role: AppRole, name: string) => void }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
+type LoginArea = "staff" | "student";
 
-  async function submit(event: FormEvent) {
+export function AuthLogin({ onLogin }: { onLogin: (role: AppRole, name: string) => void }) {
+  const [error, setError] = useState("");
+  const [busyArea, setBusyArea] = useState<LoginArea | null>(null);
+
+  async function submit(event: FormEvent<HTMLFormElement>, area: LoginArea) {
     event.preventDefault();
-    if (!supabase) return setError("Hãy cấu hình NEXT_PUBLIC_SUPABASE_URL và NEXT_PUBLIC_SUPABASE_ANON_KEY.");
-    setBusy(true); setError("");
-    const loginEmail=email.includes("@")?email.trim():`${email.trim().toLowerCase()}@ipa.local`;
-    const { data, error: authError } = await supabase.auth.signInWithPassword({ email:loginEmail, password });
-    if (authError || !data.user) { setBusy(false); return setError(authError?.message || "Không thể đăng nhập."); }
+    if (!supabase) return setError("Hãy cấu hình các biến môi trường Supabase trước khi đăng nhập.");
+    const form = new FormData(event.currentTarget);
+    const username = String(form.get("username") || "").trim().toLowerCase();
+    const password = String(form.get("password") || "");
+    const loginEmail = username.includes("@") ? username : `${username}@ipa.local`;
+    setBusyArea(area); setError("");
+    const { data, error: authError } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
+    if (authError || !data.user) { setBusyArea(null); return setError(authError?.message || "Không thể đăng nhập."); }
     try {
       const profile = await getProfile(data.user.id);
+      const wrongArea = area === "staff" ? !["admin", "teacher"].includes(profile.role) : profile.role !== "student";
+      if (wrongArea) {
+        await supabase.auth.signOut();
+        setError(area === "staff" ? "Đây là tài khoản học viên. Vui lòng đăng nhập tại khu vực Học viên." : "Đây là tài khoản Admin/Giáo viên. Vui lòng đăng nhập tại khu vực Admin & Giáo viên.");
+        return;
+      }
       onLogin(profile.role, profile.full_name);
     } catch {
       await supabase.auth.signOut();
       setError("Tài khoản chưa có hồ sơ/phân quyền trong bảng profiles.");
-    } finally { setBusy(false); }
+    } finally { setBusyArea(null); }
   }
 
-  return <main className="login-page"><section className="login-card"><img src="/ipa-logo.jpg" alt="IPA English Academy"/><div className="login-copy"><span className="eyebrow">IPA ACADEMY • STUDENT HUB</span><h1>Đăng nhập hệ thống</h1><p>Dùng username do IPA cấp. Giao diện được mở tự động theo quyền Admin, Giáo viên hoặc Học viên.</p></div><form className="login-form" onSubmit={submit}><label><span>Username</span><div><Mail/><input required value={email} onChange={e=>setEmail(e.target.value)} placeholder="admin" autoCapitalize="none"/></div></label><label><span>Mật khẩu</span><div><LockKeyhole/><input type="password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••"/></div></label>{error&&<p style={{color:"#b42318"}}>{error}</p>}<button className="primary" disabled={busy}>{busy?"Đang đăng nhập…":"Đăng nhập"}</button>{!isSupabaseConfigured&&<small>Điền biến môi trường Supabase để kích hoạt đăng nhập.</small>}</form></section></main>;
+  return <main className="auth-page"><section className="auth-brand"><img src="/ipa-logo.jpg" alt="IPA English Academy"/><span>IPA ENGLISH ACADEMY</span><h1>Mỗi hành trình học tập đều xứng đáng được theo sát.</h1><p>Student HUB kết nối học viện, giáo viên và học viên trên một không gian thống nhất.</p></section><section className="auth-panel"><div className="auth-box"><span className="auth-eyebrow">STUDENT HUB • SECURE LOGIN</span><h2>Đăng nhập hệ thống</h2><p className="auth-intro">Chọn đúng khu vực đăng nhập theo vai trò của bạn.</p>{error && <div className="auth-error" role="alert">{error}</div>}<div className="auth-grid"><article className="auth-role-card staff"><header><i><ShieldCheck/></i><div><h3>Admin & Giáo viên</h3><p>Quản trị và giảng dạy</p></div></header><form onSubmit={event => submit(event, "staff")}><label><span>Username</span><div><Mail/><input name="username" required defaultValue="admin" autoCapitalize="none" autoComplete="username"/></div></label><label><span>Mật khẩu</span><div><LockKeyhole/><input name="password" type="password" required autoComplete="current-password" placeholder="••••••••"/></div></label><button className="primary" disabled={busyArea !== null}>{busyArea === "staff" ? "Đang đăng nhập…" : "Đăng nhập quản trị"}</button></form></article><article className="auth-role-card student"><header><i><GraduationCap/></i><div><h3>Học viên</h3><p>Học tập và theo dõi tiến độ</p></div></header><form onSubmit={event => submit(event, "student")}><label><span>Username</span><div><Mail/><input name="username" required autoCapitalize="none" autoComplete="username" placeholder="Username học viên"/></div></label><label><span>Mật khẩu</span><div><LockKeyhole/><input name="password" type="password" required autoComplete="current-password" placeholder="••••••••"/></div></label><button className="primary" disabled={busyArea !== null}>{busyArea === "student" ? "Đang đăng nhập…" : "Đăng nhập học viên"}</button></form><small>Tài khoản do Admin IPA cấp.</small></article></div>{!isSupabaseConfigured && <div className="auth-config-note">Chưa cấu hình kết nối Supabase.</div>}</div></section></main>;
 }
