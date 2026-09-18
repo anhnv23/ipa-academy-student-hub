@@ -5,6 +5,7 @@ import "./classes-view.css";
 import "./schedule-enhancements.css";
 import "./account-management.css";
 import "./role-features.css";
+import "./admin-v14.css";
 
 export const metadata: Metadata = {
   title: "IPA Academy Student HUB",

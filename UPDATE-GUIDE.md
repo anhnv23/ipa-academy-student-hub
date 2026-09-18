@@ -1,4 +1,4 @@
-# Hướng dẫn cập nhật IPA Academy Student HUB v1.3.0
+# Hướng dẫn cập nhật IPA Academy Student HUB v1.4.0
 
 Áp dụng cho dự án đã kết nối theo mô hình **GitHub → Netlify → Supabase**.
 
@@ -26,7 +26,7 @@ Sao chép toàn bộ nội dung gói mới vào thư mục repository cũ, cho p
 ```bash
 git status
 git add .
-git commit -m "Update IPA Student HUB v1.3.0"
+git commit -m "Update IPA Student HUB v1.4.0"
 git push origin main
 ```
 
@@ -51,6 +51,12 @@ Với bản v1.3.0, giữ nguyên các migration đã chạy trước đây và 
 
 ```text
 supabase/migrations/20260918_role_portals.sql
+```
+
+Sau đó, với bản v1.4.0 chạy thêm đúng một lần:
+
+```text
+supabase/migrations/20260918_admin_management.sql
 ```
 
 ## Tài khoản Admin cố định

@@ -1,6 +1,6 @@
 # IPA Academy Student HUB — GitHub + Netlify + Supabase
 
-Phiên bản 1.3.0: ba cổng đăng nhập riêng cho Admin, Giáo viên và Học viên; bổ sung lịch trung tâm tuần/tháng, nhân sự, học phí, lớp được phân công, điểm danh, giao/chấm bài đa định dạng, báo cáo và thông tin khóa học.
+Phiên bản 1.4.0: nâng cấp khu vực Admin với tổng quan trung tâm, calendar tuần/tháng, thay đổi/nghỉ/bù buổi học, điểm danh tự động từ đơn xin nghỉ, hồ sơ học viên và giáo viên tích hợp tài khoản, học phí có lọc và biểu đồ; bỏ menu Báo cáo Admin.
 
 Hướng dẫn go-live đầy đủ nằm tại **`GO-LIVE-GUIDE.md`**.
 Thiết lập Admin mặc định và quản lý username nằm tại **`ADMIN-ACCOUNT-SETUP.md`**.
