@@ -62,6 +62,7 @@ import {
   TuitionV14,
 } from "./admin-v14";
 import { StaffManagementLive, StudentManagementLive } from "./admin-live";
+import { SampleDataReset } from "./sample-reset";
 import { AppRole, getProfile, supabase } from "../lib/supabase";
 
 type Role = "admin" | "teacher" | "student";
@@ -526,7 +527,7 @@ export default function HomePage() {
               </div>
             </section>
           )}
-          {role === "admin" && view === "overview" && <AdminOverviewV14 />}
+          {role === "admin" && view === "overview" && <><AdminOverviewV14 /><SampleDataReset /></>}
           {role === "admin" && view === "classes" && <AdminClassHub />}
           {role === "admin" && view === "calendar" && <CenterCalendarV14 />}
           {role === "admin" && view === "students" && <StudentManagementLive />}

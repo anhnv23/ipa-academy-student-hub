@@ -1,4 +1,4 @@
-# Hướng dẫn cập nhật IPA Academy Student HUB v1.4.1
+# Hướng dẫn cập nhật IPA Academy Student HUB v1.5.0
 
 Áp dụng cho dự án đã kết nối theo mô hình **GitHub → Netlify → Supabase**.
 
@@ -26,7 +26,7 @@ Sao chép toàn bộ nội dung gói mới vào thư mục repository cũ, cho p
 ```bash
 git status
 git add .
-git commit -m "Fix Supabase account persistence v1.4.1"
+git commit -m "Add controlled sample database reset v1.5.0"
 git push origin main
 ```
 

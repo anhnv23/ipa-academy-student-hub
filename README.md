@@ -1,6 +1,6 @@
 # IPA Academy Student HUB — GitHub + Netlify + Supabase
 
-Phiên bản 1.4.1: sửa luồng lưu thật học viên/giáo viên. Form Admin tạo hoặc cập nhật Supabase Auth, `profiles`, phân lớp và mật khẩu qua Netlify Function; danh sách được tải lại trực tiếp từ Supabase nên tài khoản có thể đăng nhập ngay.
+Phiên bản 1.5.0: bổ sung công cụ reset có xác nhận dành cho Admin. Công cụ giữ nguyên Admin và cấu trúc Supabase, xóa toàn bộ dữ liệu/tài khoản còn lại rồi tạo 3 lớp, 15 học viên và 2 giáo viên có hồ sơ cùng tài khoản đăng nhập sử dụng được; chưa gán lớp theo yêu cầu.
 
 Hướng dẫn go-live đầy đủ nằm tại **`GO-LIVE-GUIDE.md`**.
 Thiết lập Admin mặc định và quản lý username nằm tại **`ADMIN-ACCOUNT-SETUP.md`**.
