@@ -1,4 +1,4 @@
-# Hướng dẫn cập nhật IPA Academy Student HUB
+# Hướng dẫn cập nhật IPA Academy Student HUB v1.2.0
 
 Áp dụng cho dự án đã kết nối theo mô hình **GitHub → Netlify → Supabase**.
 
@@ -26,7 +26,7 @@ Sao chép toàn bộ nội dung gói mới vào thư mục repository cũ, cho p
 ```bash
 git status
 git add .
-git commit -m "Update IPA Student HUB v1.1.0"
+git commit -m "Update IPA Student HUB v1.2.0"
 git push origin main
 ```
 
@@ -47,7 +47,22 @@ Chỉ chạy file mới trong `supabase/migrations` mà bạn chưa từng chạ
 2. Mở file migration mới, sao chép SQL, dán và bấm **Run** một lần.
 3. Không chạy lại `supabase/schema.sql` trên database đang có dữ liệu.
 
-Với bản v1.1.0, nếu đã chạy `20260915_weekly_schedule.sql` và `20260915_username_accounts.sql` thì không cần chạy lại SQL.
+Với bản v1.2.0, nếu đã chạy `20260915_weekly_schedule.sql` và `20260915_username_accounts.sql` thì không cần chạy lại SQL.
+
+## Tài khoản Admin cố định
+
+```text
+Username: Admin
+Password: Admin@123
+```
+
+Khi đăng nhập trên website Netlify, Function `ensure-admin` tự tạo hoặc đồng bộ tài khoản `admin@ipa.local` và hồ sơ `admin` trong Supabase. Admin vì vậy vẫn có phiên xác thực hợp lệ để tạo tài khoản học viên. Netlify bắt buộc phải có biến bí mật `SUPABASE_SERVICE_ROLE_KEY`.
+
+Khi chạy local bằng `npm run dev`, khởi tạo Admin một lần bằng:
+
+```bash
+npm run seed:admin
+```
 
 ## 6. Kiểm tra sau cập nhật
 
