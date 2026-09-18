@@ -1,6 +1,6 @@
 # IPA Academy Student HUB — GitHub + Netlify + Supabase
 
-Phiên bản 1.2.0: tài khoản Admin mặc định `Admin / Admin@123` được tự động đồng bộ với Supabase khi đăng nhập trên Netlify. Tài khoản học viên và giáo viên do Admin tạo được lưu trong Supabase.
+Phiên bản 1.2.1: tài khoản Admin mặc định `Admin / Admin@123` được tự động đồng bộ với Supabase khi đăng nhập trên Netlify và không còn phụ thuộc vào truy vấn RLS của bảng `profiles`. Tài khoản học viên và giáo viên do Admin tạo được lưu trong Supabase.
 
 Hướng dẫn go-live đầy đủ nằm tại **`GO-LIVE-GUIDE.md`**.
 Thiết lập Admin mặc định và quản lý username nằm tại **`ADMIN-ACCOUNT-SETUP.md`**.

@@ -17,8 +17,9 @@ export function AuthLogin({ onLogin }: { onLogin: (role: AppRole, name: string) 
     const username = String(form.get("username") || "").trim().toLowerCase();
     const password = String(form.get("password") || "");
     const loginEmail = username.includes("@") ? username : `${username}@ipa.local`;
+    const isDefaultAdmin = area === "staff" && username === "admin" && password === "Admin@123";
     setBusyArea(area); setError("");
-    if (area === "staff" && username === "admin" && password === "Admin@123") {
+    if (isDefaultAdmin) {
       const bootstrap = await fetch("/.netlify/functions/ensure-admin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -32,6 +33,11 @@ export function AuthLogin({ onLogin }: { onLogin: (role: AppRole, name: string) 
     }
     const { data, error: authError } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
     if (authError || !data.user) { setBusyArea(null); return setError(authError?.message || "Không thể đăng nhập."); }
+    if (isDefaultAdmin) {
+      setBusyArea(null);
+      onLogin("admin", "IPA Admin");
+      return;
+    }
     try {
       const profile = await getProfile(data.user.id);
       const wrongArea = area === "staff" ? !["admin", "teacher"].includes(profile.role) : profile.role !== "student";
