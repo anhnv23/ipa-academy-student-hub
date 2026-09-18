@@ -1,95 +1,1456 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BarChart3, Bell, BookOpen, CalendarDays, CalendarRange, CheckCircle2, ChevronRight, ClipboardCheck, Clock3, FileText, GraduationCap, Home, LogOut, Menu, MessageSquare, Plus, Search, Send, Sparkles, TrendingUp, Upload, UserCog, UserRound, Users, WalletCards, X } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import {
+  BarChart3,
+  Bell,
+  BookOpen,
+  CalendarDays,
+  CalendarRange,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardCheck,
+  Clock3,
+  FileText,
+  GraduationCap,
+  Home,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Plus,
+  Search,
+  Send,
+  Sparkles,
+  TrendingUp,
+  Upload,
+  UserCog,
+  UserRound,
+  Users,
+  WalletCards,
+  X,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
 import { TeacherOverview } from "./role-views";
 import { Language, translatePage } from "./language";
 import { ClassManagement } from "./classes-view-v2";
 import { AuthLogin } from "./auth-login";
 import { AccountManagement } from "./account-management";
-import {CenterCalendar,LearningReports,StaffManagement,StudentCourse,TeacherAssignments,TeacherAttendance,TeacherClasses,TuitionManagement} from "./role-features";
-import {AdminClassHub,AdminOverviewV14,CenterCalendarV14,StaffV14,StudentManagementV14,TuitionV14} from "./admin-v14";
+import {
+  CenterCalendar,
+  LearningReports,
+  StaffManagement,
+  StudentCourse,
+  TeacherAssignments,
+  TeacherAttendance,
+  TeacherClasses,
+  TuitionManagement,
+} from "./role-features";
+import {
+  AdminClassHub,
+  AdminOverviewV14,
+  CenterCalendarV14,
+  StaffV14,
+  StudentManagementV14,
+  TuitionV14,
+} from "./admin-v14";
+import { StaffManagementLive, StudentManagementLive } from "./admin-live";
 import { AppRole, getProfile, supabase } from "../lib/supabase";
 
 type Role = "admin" | "teacher" | "student";
-type View = "overview" | "students" | "classes" | "calendar" | "tuition" | "staff" | "attendance" | "assignments" | "grading" | "reports" | "leave" | "course";
+type View =
+  | "overview"
+  | "students"
+  | "classes"
+  | "calendar"
+  | "tuition"
+  | "staff"
+  | "attendance"
+  | "assignments"
+  | "grading"
+  | "reports"
+  | "leave"
+  | "course";
 
 const students = [
-  { name: "Nguyễn Minh Anh", code: "IPA-24031", class: "IELTS 6.5 • I67-A", attendance: 96, score: 8.2, status: "Đang học", initials: "MA", color: "#2359d7" },
-  { name: "Trần Gia Huy", code: "IPA-24044", class: "Junior 4 • J4-B", attendance: 89, score: 7.4, status: "Đang học", initials: "GH", color: "#f4a62a" },
-  { name: "Lê Khánh Linh", code: "IPA-24052", class: "IELTS Foundation • IF-C", attendance: 93, score: 8.8, status: "Đang học", initials: "KL", color: "#10a781" },
-  { name: "Phạm Đức Minh", code: "IPA-24063", class: "Communication • COM-A", attendance: 82, score: 6.9, status: "Cần lưu ý", initials: "ĐM", color: "#ef5b4c" },
-  { name: "Vũ Quỳnh Chi", code: "IPA-24071", class: "IELTS 7.0 • I70-A", attendance: 98, score: 9.1, status: "Đang học", initials: "QC", color: "#7d55d9" },
+  {
+    name: "Nguyễn Minh Anh",
+    code: "IPA-24031",
+    class: "IELTS 6.5 • I67-A",
+    attendance: 96,
+    score: 8.2,
+    status: "Đang học",
+    initials: "MA",
+    color: "#2359d7",
+  },
+  {
+    name: "Trần Gia Huy",
+    code: "IPA-24044",
+    class: "Junior 4 • J4-B",
+    attendance: 89,
+    score: 7.4,
+    status: "Đang học",
+    initials: "GH",
+    color: "#f4a62a",
+  },
+  {
+    name: "Lê Khánh Linh",
+    code: "IPA-24052",
+    class: "IELTS Foundation • IF-C",
+    attendance: 93,
+    score: 8.8,
+    status: "Đang học",
+    initials: "KL",
+    color: "#10a781",
+  },
+  {
+    name: "Phạm Đức Minh",
+    code: "IPA-24063",
+    class: "Communication • COM-A",
+    attendance: 82,
+    score: 6.9,
+    status: "Cần lưu ý",
+    initials: "ĐM",
+    color: "#ef5b4c",
+  },
+  {
+    name: "Vũ Quỳnh Chi",
+    code: "IPA-24071",
+    class: "IELTS 7.0 • I70-A",
+    attendance: 98,
+    score: 9.1,
+    status: "Đang học",
+    initials: "QC",
+    color: "#7d55d9",
+  },
 ];
 const assignments = [
-  { title: "Writing Task 2 — Education", class: "IELTS 6.5 • I67-A", due: "18/09/2026", submitted: 14, total: 18, status: "Đang mở", icon: "W" },
-  { title: "Unit 6 — Speaking recording", class: "Junior 4 • J4-B", due: "17/09/2026", submitted: 11, total: 15, status: "Sắp hết hạn", icon: "S" },
-  { title: "Vocabulary review — Travel", class: "IELTS Foundation • IF-C", due: "15/09/2026", submitted: 16, total: 16, status: "Chờ chấm", icon: "V" },
+  {
+    title: "Writing Task 2 — Education",
+    class: "IELTS 6.5 • I67-A",
+    due: "18/09/2026",
+    submitted: 14,
+    total: 18,
+    status: "Đang mở",
+    icon: "W",
+  },
+  {
+    title: "Unit 6 — Speaking recording",
+    class: "Junior 4 • J4-B",
+    due: "17/09/2026",
+    submitted: 11,
+    total: 15,
+    status: "Sắp hết hạn",
+    icon: "S",
+  },
+  {
+    title: "Vocabulary review — Travel",
+    class: "IELTS Foundation • IF-C",
+    due: "15/09/2026",
+    submitted: 16,
+    total: 16,
+    status: "Chờ chấm",
+    icon: "V",
+  },
 ];
-const progressData = [{ month: "T4", score: 6.4, classAvg: 6.7 }, { month: "T5", score: 6.8, classAvg: 6.9 }, { month: "T6", score: 7.1, classAvg: 7 }, { month: "T7", score: 7.5, classAvg: 7.2 }, { month: "T8", score: 7.8, classAvg: 7.3 }, { month: "T9", score: 8.2, classAvg: 7.5 }];
-const navAdmin = [{ id: "overview", label: "Tổng quan", icon: Home }, { id: "classes", label: "Quản lý lớp học", icon: BookOpen }, { id: "calendar", label: "Lịch trung tâm", icon: CalendarRange }, { id: "students", label: "Quản lý học viên", icon: Users }, { id: "tuition", label: "Quản lý học phí", icon: WalletCards }, { id: "staff", label: "Quản lý nhân sự", icon: UserCog }];
-const navStudent = [{ id: "overview", label: "Trang chủ", icon: Home }, { id: "assignments", label: "Bài tập của tôi", icon: BookOpen }, { id: "leave", label: "Xin nghỉ học", icon: CalendarDays }, { id: "reports", label: "Tiến độ học tập", icon: TrendingUp }, { id: "course", label: "Khóa học & học phí", icon: GraduationCap }];
-const navTeacher = [{ id: "overview", label: "Tổng quan", icon: Home }, { id: "classes", label: "Lớp được phân công", icon: BookOpen }, { id: "attendance", label: "Điểm danh", icon: CheckCircle2 }, { id: "assignments", label: "Giao bài tập", icon: ClipboardCheck }, { id: "grading", label: "Chấm bài", icon: MessageSquare }, { id: "reports", label: "Báo cáo học tập", icon: BarChart3 }];
-const learningQuotes=[
- {author:"Nelson Mandela",vi:"Giáo dục là vũ khí mạnh mẽ nhất mà bạn có thể dùng để thay đổi thế giới.",en:"Education is the most powerful weapon which you can use to change the world."},
- {author:"Ludwig Wittgenstein",vi:"Giới hạn ngôn ngữ của tôi cũng chính là giới hạn thế giới của tôi.",en:"The limits of my language mean the limits of my world."},
- {author:"Frank Smith",vi:"Một ngôn ngữ đưa bạn vào một hành lang; hai ngôn ngữ mở ra mọi cánh cửa.",en:"One language sets you in a corridor for life. Two languages open every door along the way."},
- {author:"Federico Fellini",vi:"Một ngôn ngữ khác mang đến một cách nhìn khác về cuộc sống.",en:"A different language is a different vision of life."},
- {author:"Johann Wolfgang von Goethe",vi:"Người không biết ngoại ngữ cũng chưa thực sự hiểu ngôn ngữ của chính mình.",en:"Those who know nothing of foreign languages know nothing of their own."},
- {author:"Roger Bacon",vi:"Hiểu biết về ngôn ngữ là cánh cửa dẫn tới trí tuệ.",en:"Knowledge of languages is the doorway to wisdom."},
- {author:"Confucius",vi:"Học mà không suy ngẫm thì vô ích; suy ngẫm mà không học thì nguy hiểm.",en:"Learning without thought is labor lost; thought without learning is perilous."},
- {author:"Malala Yousafzai",vi:"Một đứa trẻ, một người thầy, một cuốn sách và một cây bút có thể thay đổi thế giới.",en:"One child, one teacher, one book and one pen can change the world."},
- {author:"Benjamin Franklin",vi:"Đầu tư vào tri thức luôn mang lại lợi ích lớn nhất.",en:"An investment in knowledge pays the best interest."},
- {author:"Michel de Montaigne",vi:"Một trí óc biết tư duy quý hơn một trí óc chỉ chứa đầy kiến thức.",en:"It is better to have a well-made head than a well-filled one."}
+const progressData = [
+  { month: "T4", score: 6.4, classAvg: 6.7 },
+  { month: "T5", score: 6.8, classAvg: 6.9 },
+  { month: "T6", score: 7.1, classAvg: 7 },
+  { month: "T7", score: 7.5, classAvg: 7.2 },
+  { month: "T8", score: 7.8, classAvg: 7.3 },
+  { month: "T9", score: 8.2, classAvg: 7.5 },
+];
+const navAdmin = [
+  { id: "overview", label: "Tổng quan", icon: Home },
+  { id: "classes", label: "Quản lý lớp học", icon: BookOpen },
+  { id: "calendar", label: "Lịch trung tâm", icon: CalendarRange },
+  { id: "students", label: "Quản lý học viên", icon: Users },
+  { id: "tuition", label: "Quản lý học phí", icon: WalletCards },
+  { id: "staff", label: "Quản lý nhân sự", icon: UserCog },
+];
+const navStudent = [
+  { id: "overview", label: "Trang chủ", icon: Home },
+  { id: "assignments", label: "Bài tập của tôi", icon: BookOpen },
+  { id: "leave", label: "Xin nghỉ học", icon: CalendarDays },
+  { id: "reports", label: "Tiến độ học tập", icon: TrendingUp },
+  { id: "course", label: "Khóa học & học phí", icon: GraduationCap },
+];
+const navTeacher = [
+  { id: "overview", label: "Tổng quan", icon: Home },
+  { id: "classes", label: "Lớp được phân công", icon: BookOpen },
+  { id: "attendance", label: "Điểm danh", icon: CheckCircle2 },
+  { id: "assignments", label: "Giao bài tập", icon: ClipboardCheck },
+  { id: "grading", label: "Chấm bài", icon: MessageSquare },
+  { id: "reports", label: "Báo cáo học tập", icon: BarChart3 },
+];
+const learningQuotes = [
+  {
+    author: "Nelson Mandela",
+    vi: "Giáo dục là vũ khí mạnh mẽ nhất mà bạn có thể dùng để thay đổi thế giới.",
+    en: "Education is the most powerful weapon which you can use to change the world.",
+  },
+  {
+    author: "Ludwig Wittgenstein",
+    vi: "Giới hạn ngôn ngữ của tôi cũng chính là giới hạn thế giới của tôi.",
+    en: "The limits of my language mean the limits of my world.",
+  },
+  {
+    author: "Frank Smith",
+    vi: "Một ngôn ngữ đưa bạn vào một hành lang; hai ngôn ngữ mở ra mọi cánh cửa.",
+    en: "One language sets you in a corridor for life. Two languages open every door along the way.",
+  },
+  {
+    author: "Federico Fellini",
+    vi: "Một ngôn ngữ khác mang đến một cách nhìn khác về cuộc sống.",
+    en: "A different language is a different vision of life.",
+  },
+  {
+    author: "Johann Wolfgang von Goethe",
+    vi: "Người không biết ngoại ngữ cũng chưa thực sự hiểu ngôn ngữ của chính mình.",
+    en: "Those who know nothing of foreign languages know nothing of their own.",
+  },
+  {
+    author: "Roger Bacon",
+    vi: "Hiểu biết về ngôn ngữ là cánh cửa dẫn tới trí tuệ.",
+    en: "Knowledge of languages is the doorway to wisdom.",
+  },
+  {
+    author: "Confucius",
+    vi: "Học mà không suy ngẫm thì vô ích; suy ngẫm mà không học thì nguy hiểm.",
+    en: "Learning without thought is labor lost; thought without learning is perilous.",
+  },
+  {
+    author: "Malala Yousafzai",
+    vi: "Một đứa trẻ, một người thầy, một cuốn sách và một cây bút có thể thay đổi thế giới.",
+    en: "One child, one teacher, one book and one pen can change the world.",
+  },
+  {
+    author: "Benjamin Franklin",
+    vi: "Đầu tư vào tri thức luôn mang lại lợi ích lớn nhất.",
+    en: "An investment in knowledge pays the best interest.",
+  },
+  {
+    author: "Michel de Montaigne",
+    vi: "Một trí óc biết tư duy quý hơn một trí óc chỉ chứa đầy kiến thức.",
+    en: "It is better to have a well-made head than a well-filled one.",
+  },
 ];
 
-function ProgressRing({ value, label }: { value: number; label: string }) { return <div className="ring-wrap"><div className="ring" style={{ "--p": `${value * 3.6}deg` } as React.CSSProperties}><span>{value}%</span></div><small>{label}</small></div>; }
+function ProgressRing({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="ring-wrap">
+      <div
+        className="ring"
+        style={{ "--p": `${value * 3.6}deg` } as React.CSSProperties}
+      >
+        <span>{value}%</span>
+      </div>
+      <small>{label}</small>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [displayName, setDisplayName] = useState("IPA User");
-  const [quoteIndex,setQuoteIndex]=useState(0);
+  const [quoteIndex, setQuoteIndex] = useState(0);
   const [language, setLanguage] = useState<Language>("vi");
-  const [role, setRole] = useState<Role>("admin"); const [view, setView] = useState<View>("overview"); const [mobileNav, setMobileNav] = useState(false);
-  const [modal, setModal] = useState<"student" | "assignment" | "submit" | "leave" | null>(null); const [toast, setToast] = useState(""); const [query, setQuery] = useState("");
-  const visibleStudents = useMemo(() => students.filter(s => `${s.name} ${s.code} ${s.class}`.toLowerCase().includes(query.toLowerCase())), [query]); const nav = role === "admin" ? navAdmin : role === "teacher" ? navTeacher : navStudent;
-  useEffect(() => { const context = (document as Document & { modelContext?: { registerTool?: (tool: unknown, options?: { signal?: AbortSignal }) => void } }).modelContext; if (!context?.registerTool) return; const controller = new AbortController(); context.registerTool({ name: "navigate_student_hub", title: "Mở mục Student HUB", description: "Đi tới một mục trong IPA Academy Student HUB.", inputSchema: { type: "object", properties: { view: { type: "string", enum: ["overview", "students", "assignments", "reports", "leave"] } }, required: ["view"], additionalProperties: false }, annotations: { readOnlyHint: true, untrustedContentHint: false }, execute: (input: { view: View }) => { setView(input.view); return { view: input.view }; } }, { signal: controller.signal }); return () => controller.abort(); }, []);
-  const login = (next: AppRole, name = "IPA User") => { const last=Number(localStorage.getItem("ipa_last_quote"));let chosen=Math.floor(Math.random()*learningQuotes.length);if(chosen===last)chosen=(chosen+1)%learningQuotes.length;localStorage.setItem("ipa_last_quote",String(chosen));setQuoteIndex(chosen);setRole(next); setDisplayName(name); setView("overview"); setLoggedIn(true); }; const done = (message: string) => { setModal(null); setToast(message); window.setTimeout(() => setToast(""), 3200); };
-  useEffect(() => { let live = true; (async()=>{ if (!supabase) { setAuthReady(true); return; } const { data } = await supabase.auth.getSession(); if (data.session?.user) { try { const p=await getProfile(data.session.user.id); if(live) login(p.role,p.full_name); } catch { await supabase.auth.signOut(); } } if(live) setAuthReady(true); })(); const { data: listener } = supabase?.auth.onAuthStateChange((_event, session)=>{ if(!session) setLoggedIn(false); }) || {data:{subscription:{unsubscribe(){}}}}; return()=>{ live=false; listener.subscription.unsubscribe(); }; }, []);
-  const logout = async () => { await supabase?.auth.signOut(); setLoggedIn(false); setView("overview"); };
-  useEffect(() => { window.requestAnimationFrame(() => translatePage(language)); }, [language, loggedIn, role, view, modal]);
+  const [role, setRole] = useState<Role>("admin");
+  const [view, setView] = useState<View>("overview");
+  const [mobileNav, setMobileNav] = useState(false);
+  const [modal, setModal] = useState<
+    "student" | "assignment" | "submit" | "leave" | null
+  >(null);
+  const [toast, setToast] = useState("");
+  const [query, setQuery] = useState("");
+  const visibleStudents = useMemo(
+    () =>
+      students.filter((s) =>
+        `${s.name} ${s.code} ${s.class}`
+          .toLowerCase()
+          .includes(query.toLowerCase()),
+      ),
+    [query],
+  );
+  const nav =
+    role === "admin" ? navAdmin : role === "teacher" ? navTeacher : navStudent;
+  useEffect(() => {
+    const context = (
+      document as Document & {
+        modelContext?: {
+          registerTool?: (
+            tool: unknown,
+            options?: { signal?: AbortSignal },
+          ) => void;
+        };
+      }
+    ).modelContext;
+    if (!context?.registerTool) return;
+    const controller = new AbortController();
+    context.registerTool(
+      {
+        name: "navigate_student_hub",
+        title: "Mở mục Student HUB",
+        description: "Đi tới một mục trong IPA Academy Student HUB.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            view: {
+              type: "string",
+              enum: ["overview", "students", "assignments", "reports", "leave"],
+            },
+          },
+          required: ["view"],
+          additionalProperties: false,
+        },
+        annotations: { readOnlyHint: true, untrustedContentHint: false },
+        execute: (input: { view: View }) => {
+          setView(input.view);
+          return { view: input.view };
+        },
+      },
+      { signal: controller.signal },
+    );
+    return () => controller.abort();
+  }, []);
+  const login = (next: AppRole, name = "IPA User") => {
+    const last = Number(localStorage.getItem("ipa_last_quote"));
+    let chosen = Math.floor(Math.random() * learningQuotes.length);
+    if (chosen === last) chosen = (chosen + 1) % learningQuotes.length;
+    localStorage.setItem("ipa_last_quote", String(chosen));
+    setQuoteIndex(chosen);
+    setRole(next);
+    setDisplayName(name);
+    setView("overview");
+    setLoggedIn(true);
+  };
+  const done = (message: string) => {
+    setModal(null);
+    setToast(message);
+    window.setTimeout(() => setToast(""), 3200);
+  };
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      if (!supabase) {
+        setAuthReady(true);
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        try {
+          const p = await getProfile(data.session.user.id);
+          if (live) login(p.role, p.full_name);
+        } catch {
+          await supabase.auth.signOut();
+        }
+      }
+      if (live) setAuthReady(true);
+    })();
+    const { data: listener } = supabase?.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) setLoggedIn(false);
+      },
+    ) || { data: { subscription: { unsubscribe() {} } } };
+    return () => {
+      live = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+  const logout = async () => {
+    await supabase?.auth.signOut();
+    setLoggedIn(false);
+    setView("overview");
+  };
+  useEffect(() => {
+    window.requestAnimationFrame(() => translatePage(language));
+  }, [language, loggedIn, role, view, modal]);
   useEffect(() => {
     let control = document.querySelector<HTMLDivElement>(".floating-language");
-    if (!control) { control = document.createElement("div"); control.className = "floating-language"; document.body.appendChild(control); }
+    if (!control) {
+      control = document.createElement("div");
+      control.className = "floating-language";
+      document.body.appendChild(control);
+    }
     control.replaceChildren();
-    (["vi","en"] as Language[]).forEach(code => { const button = document.createElement("button"); button.textContent = code.toUpperCase(); button.className = language === code ? "active" : ""; button.setAttribute("aria-label", code === "vi" ? "Hiển thị tiếng Việt" : "Display in English"); button.onclick = () => setLanguage(code); control!.appendChild(button); });
-    return () => { control?.remove(); };
+    (["vi", "en"] as Language[]).forEach((code) => {
+      const button = document.createElement("button");
+      button.textContent = code.toUpperCase();
+      button.className = language === code ? "active" : "";
+      button.setAttribute(
+        "aria-label",
+        code === "vi" ? "Hiển thị tiếng Việt" : "Display in English",
+      );
+      button.onclick = () => setLanguage(code);
+      control!.appendChild(button);
+    });
+    return () => {
+      control?.remove();
+    };
   }, [language]);
-  if (!authReady) return <main className="login-page"><section className="login-card"><p>Đang kiểm tra phiên đăng nhập…</p></section></main>;
+  if (!authReady)
+    return (
+      <main className="login-page">
+        <section className="login-card">
+          <p>Đang kiểm tra phiên đăng nhập…</p>
+        </section>
+      </main>
+    );
   if (!loggedIn) return <AuthLogin onLogin={login} />;
-  return <div className="app-shell"><aside className={`sidebar ${mobileNav ? "open" : ""}`}><div className="brand"><img src="/ipa-logo.jpg" alt="IPA English Academy" /><div><strong>IPA Academy</strong><span>Student HUB</span></div><button className="close-nav" onClick={() => setMobileNav(false)} aria-label="Đóng menu"><X /></button></div><nav>{nav.map(item => <button key={item.id} className={view === item.id ? "active" : ""} onClick={() => { setView(item.id as View); setMobileNav(false); }}><item.icon /><span>{item.label}</span>{view === item.id && <ChevronRight className="chevron" />}</button>)}</nav><div className="help-card"><Sparkles /><strong>Cần hỗ trợ?</strong><p>Liên hệ bộ phận học vụ IPA khi bạn cần trợ giúp.</p><button>Gửi yêu cầu</button></div><div className="sidebar-profile"><div className="avatar">{role === "admin" ? "AD" : role === "teacher" ? "GV" : "MA"}</div><div><strong>{role === "admin" ? "IPA Admin" : role === "teacher" ? "Cô Mai Anh" : "Minh Anh"}</strong><span>{role === "admin" ? "Quản trị viên" : role === "teacher" ? "Giáo viên • IELTS" : "Học viên • I67-A"}</span></div></div></aside>
-  <main className="main"><header className="topbar"><button className="menu" onClick={() => setMobileNav(true)} aria-label="Mở menu"><Menu /></button><div className="page-heading"><p>{role === "admin" ? "Hệ thống quản lý học viện" : role === "teacher" ? "Không gian giảng dạy" : `Xin chào, ${displayName} 👋`}</p><h1>{nav.find(n => n.id === view)?.label}</h1></div><div className="top-actions"><span className="role-badge">{role === "admin" ? "ADMIN" : role === "teacher" ? "GIÁO VIÊN" : "HỌC VIÊN"}</span><button className="icon-btn" aria-label="Thông báo"><Bell /><span /></button><button className="icon-btn" onClick={logout} aria-label="Đăng xuất"><LogOut /></button><div className="avatar">{role === "admin" ? "AD" : role === "teacher" ? "GV" : "HV"}</div></div></header><div className="content">
-  {view==="overview"&&<section className="welcome-banner"><div><span>{language==="vi"?"CẢM HỨNG HỌC TẬP":"LEARNING INSPIRATION"}</span><div className="home-quote"><q>{learningQuotes[quoteIndex][language]}</q><cite>— {learningQuotes[quoteIndex].author}</cite></div></div></section>}{role === "admin" && view === "overview" && <AdminOverviewV14 />}{role === "admin" && view === "classes" && <AdminClassHub />}{role === "admin" && view === "calendar" && <CenterCalendarV14 />}{role === "admin" && view === "students" && <StudentManagementV14 />}{role === "admin" && view === "tuition" && <TuitionV14 />}{role === "admin" && view === "staff" && <StaffV14 />}{role === "teacher" && view === "overview" && <TeacherOverview onNew={() => setView("assignments")} go={setView} />}{role === "teacher" && view === "classes" && <TeacherClasses />}{role === "teacher" && view === "attendance" && <TeacherAttendance />}{role === "teacher" && view === "assignments" && <TeacherAssignments />}{role === "teacher" && view === "grading" && <TeacherAssignments grading />}{role === "teacher" && view === "reports" && <LearningReports teacher />}{role === "student" && view === "overview" && <StudentOverview onSubmit={() => setModal("submit")} onLeave={() => setModal("leave")} go={setView} />}{role === "student" && view === "assignments" && <AssignmentsView admin={false} onNew={() => setModal("submit")} />}{role === "student" && view === "reports" && <ReportsView admin={false} />}{role === "student" && view === "leave" && <LeaveView onNew={() => setModal("leave")} />}{role === "student" && view === "course" && <StudentCourse />}
-  </div></main>{mobileNav && <button className="nav-backdrop" onClick={() => setMobileNav(false)} aria-label="Đóng menu" />}{modal && <Modal type={modal} close={() => setModal(null)} done={done} />}{toast && <div className="toast"><CheckCircle2 />{toast}</div>}</div>;
+  return (
+    <div className="app-shell">
+      <aside className={`sidebar ${mobileNav ? "open" : ""}`}>
+        <div className="brand">
+          <img src="/ipa-logo.jpg" alt="IPA English Academy" />
+          <div>
+            <strong>IPA Academy</strong>
+            <span>Student HUB</span>
+          </div>
+          <button
+            className="close-nav"
+            onClick={() => setMobileNav(false)}
+            aria-label="Đóng menu"
+          >
+            <X />
+          </button>
+        </div>
+        <nav>
+          {nav.map((item) => (
+            <button
+              key={item.id}
+              className={view === item.id ? "active" : ""}
+              onClick={() => {
+                setView(item.id as View);
+                setMobileNav(false);
+              }}
+            >
+              <item.icon />
+              <span>{item.label}</span>
+              {view === item.id && <ChevronRight className="chevron" />}
+            </button>
+          ))}
+        </nav>
+        <div className="help-card">
+          <Sparkles />
+          <strong>Cần hỗ trợ?</strong>
+          <p>Liên hệ bộ phận học vụ IPA khi bạn cần trợ giúp.</p>
+          <button>Gửi yêu cầu</button>
+        </div>
+        <div className="sidebar-profile">
+          <div className="avatar">
+            {role === "admin" ? "AD" : role === "teacher" ? "GV" : "MA"}
+          </div>
+          <div>
+            <strong>
+              {role === "admin"
+                ? "IPA Admin"
+                : role === "teacher"
+                  ? "Cô Mai Anh"
+                  : "Minh Anh"}
+            </strong>
+            <span>
+              {role === "admin"
+                ? "Quản trị viên"
+                : role === "teacher"
+                  ? "Giáo viên • IELTS"
+                  : "Học viên • I67-A"}
+            </span>
+          </div>
+        </div>
+      </aside>
+      <main className="main">
+        <header className="topbar">
+          <button
+            className="menu"
+            onClick={() => setMobileNav(true)}
+            aria-label="Mở menu"
+          >
+            <Menu />
+          </button>
+          <div className="page-heading">
+            <p>
+              {role === "admin"
+                ? "Hệ thống quản lý học viện"
+                : role === "teacher"
+                  ? "Không gian giảng dạy"
+                  : `Xin chào, ${displayName} 👋`}
+            </p>
+            <h1>{nav.find((n) => n.id === view)?.label}</h1>
+          </div>
+          <div className="top-actions">
+            <span className="role-badge">
+              {role === "admin"
+                ? "ADMIN"
+                : role === "teacher"
+                  ? "GIÁO VIÊN"
+                  : "HỌC VIÊN"}
+            </span>
+            <button className="icon-btn" aria-label="Thông báo">
+              <Bell />
+              <span />
+            </button>
+            <button
+              className="icon-btn"
+              onClick={logout}
+              aria-label="Đăng xuất"
+            >
+              <LogOut />
+            </button>
+            <div className="avatar">
+              {role === "admin" ? "AD" : role === "teacher" ? "GV" : "HV"}
+            </div>
+          </div>
+        </header>
+        <div className="content">
+          {view === "overview" && (
+            <section className="welcome-banner">
+              <div>
+                <span>
+                  {language === "vi"
+                    ? "CẢM HỨNG HỌC TẬP"
+                    : "LEARNING INSPIRATION"}
+                </span>
+                <div className="home-quote">
+                  <q>{learningQuotes[quoteIndex][language]}</q>
+                  <cite>— {learningQuotes[quoteIndex].author}</cite>
+                </div>
+              </div>
+            </section>
+          )}
+          {role === "admin" && view === "overview" && <AdminOverviewV14 />}
+          {role === "admin" && view === "classes" && <AdminClassHub />}
+          {role === "admin" && view === "calendar" && <CenterCalendarV14 />}
+          {role === "admin" && view === "students" && <StudentManagementLive />}
+          {role === "admin" && view === "tuition" && <TuitionV14 />}
+          {role === "admin" && view === "staff" && <StaffManagementLive />}
+          {role === "teacher" && view === "overview" && (
+            <TeacherOverview
+              onNew={() => setView("assignments")}
+              go={setView}
+            />
+          )}
+          {role === "teacher" && view === "classes" && <TeacherClasses />}
+          {role === "teacher" && view === "attendance" && <TeacherAttendance />}
+          {role === "teacher" && view === "assignments" && (
+            <TeacherAssignments />
+          )}
+          {role === "teacher" && view === "grading" && (
+            <TeacherAssignments grading />
+          )}
+          {role === "teacher" && view === "reports" && (
+            <LearningReports teacher />
+          )}
+          {role === "student" && view === "overview" && (
+            <StudentOverview
+              onSubmit={() => setModal("submit")}
+              onLeave={() => setModal("leave")}
+              go={setView}
+            />
+          )}
+          {role === "student" && view === "assignments" && (
+            <AssignmentsView admin={false} onNew={() => setModal("submit")} />
+          )}
+          {role === "student" && view === "reports" && (
+            <ReportsView admin={false} />
+          )}
+          {role === "student" && view === "leave" && (
+            <LeaveView onNew={() => setModal("leave")} />
+          )}
+          {role === "student" && view === "course" && <StudentCourse />}
+        </div>
+      </main>
+      {mobileNav && (
+        <button
+          className="nav-backdrop"
+          onClick={() => setMobileNav(false)}
+          aria-label="Đóng menu"
+        />
+      )}
+      {modal && <Modal type={modal} close={() => setModal(null)} done={done} />}
+      {toast && (
+        <div className="toast">
+          <CheckCircle2 />
+          {toast}
+        </div>
+      )}
+    </div>
+  );
 }
 
-function AdminOverview({ onNew, go }: { onNew: () => void; go: (v: View) => void }) { return <><section className="welcome-banner"><div><span>THỨ HAI, 14 THÁNG 9</span><h2>Chào buổi sáng, IPA Admin</h2><p>Hôm nay có 8 lớp học và 12 bài tập đang chờ chấm.</p></div><button className="primary" onClick={onNew}><Plus /> Giao bài tập</button></section><section className="stat-grid"><Stat icon={Users} label="Học viên đang học" value="248" change="+12 tháng này" tone="blue"/><Stat icon={BookOpen} label="Lớp đang hoạt động" value="18" change="8 lớp hôm nay" tone="green"/><Stat icon={ClipboardCheck} label="Bài chờ chấm" value="12" change="3 bài quá hạn" tone="orange"/><Stat icon={TrendingUp} label="Tỷ lệ chuyên cần" value="93.6%" change="+1.8% so tháng trước" tone="purple"/></section><section className="dashboard-grid"><div className="panel progress-panel"><PanelTitle title="Tiến độ học tập toàn học viện" subtitle="Điểm trung bình 6 tháng gần nhất" action="Xem báo cáo" onAction={() => go("reports")}/><div className="chart-area"><ResponsiveContainer width="100%" height={230}><LineChart data={progressData}><CartesianGrid strokeDasharray="4 6" vertical={false} stroke="#e7ecf5"/><XAxis dataKey="month" axisLine={false} tickLine={false}/><YAxis domain={[5,10]} axisLine={false} tickLine={false}/><Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #dde5f2" }}/><Line type="monotone" dataKey="score" stroke="#1752c8" strokeWidth={3} dot={{ r: 4, fill: "#1752c8" }}/><Line type="monotone" dataKey="classAvg" stroke="#9dafc9" strokeWidth={2} strokeDasharray="5 5" dot={false}/></LineChart></ResponsiveContainer></div><div className="legend"><span><i className="blue"/>Điểm trung bình</span><span><i/>Mục tiêu</span></div></div><div className="panel"><PanelTitle title="Việc cần xử lý" subtitle="Ưu tiên trong hôm nay"/><div className="task-list"><Task tone="orange" title="12 bài tập chờ chấm" meta="IELTS 6.5 và Junior 4"/><Task tone="red" title="3 yêu cầu xin nghỉ" meta="Chờ Admin xác nhận"/><Task tone="blue" title="5 hồ sơ học viên mới" meta="Cần bổ sung thông tin"/><Task tone="green" title="Báo cáo tháng 8" meta="Đã sẵn sàng xuất file"/></div></div></section><section className="panel"><PanelTitle title="Bài tập gần đây" subtitle="Theo dõi tiến độ nộp và chấm bài" action="Tất cả bài tập" onAction={() => go("assignments")}/><AssignmentTable /></section></>; }
+function AdminOverview({
+  onNew,
+  go,
+}: {
+  onNew: () => void;
+  go: (v: View) => void;
+}) {
+  return (
+    <>
+      <section className="welcome-banner">
+        <div>
+          <span>THỨ HAI, 14 THÁNG 9</span>
+          <h2>Chào buổi sáng, IPA Admin</h2>
+          <p>Hôm nay có 8 lớp học và 12 bài tập đang chờ chấm.</p>
+        </div>
+        <button className="primary" onClick={onNew}>
+          <Plus /> Giao bài tập
+        </button>
+      </section>
+      <section className="stat-grid">
+        <Stat
+          icon={Users}
+          label="Học viên đang học"
+          value="248"
+          change="+12 tháng này"
+          tone="blue"
+        />
+        <Stat
+          icon={BookOpen}
+          label="Lớp đang hoạt động"
+          value="18"
+          change="8 lớp hôm nay"
+          tone="green"
+        />
+        <Stat
+          icon={ClipboardCheck}
+          label="Bài chờ chấm"
+          value="12"
+          change="3 bài quá hạn"
+          tone="orange"
+        />
+        <Stat
+          icon={TrendingUp}
+          label="Tỷ lệ chuyên cần"
+          value="93.6%"
+          change="+1.8% so tháng trước"
+          tone="purple"
+        />
+      </section>
+      <section className="dashboard-grid">
+        <div className="panel progress-panel">
+          <PanelTitle
+            title="Tiến độ học tập toàn học viện"
+            subtitle="Điểm trung bình 6 tháng gần nhất"
+            action="Xem báo cáo"
+            onAction={() => go("reports")}
+          />
+          <div className="chart-area">
+            <ResponsiveContainer width="100%" height={230}>
+              <LineChart data={progressData}>
+                <CartesianGrid
+                  strokeDasharray="4 6"
+                  vertical={false}
+                  stroke="#e7ecf5"
+                />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} />
+                <YAxis domain={[5, 10]} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid #dde5f2",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="score"
+                  stroke="#1752c8"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: "#1752c8" }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="classAvg"
+                  stroke="#9dafc9"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="legend">
+            <span>
+              <i className="blue" />
+              Điểm trung bình
+            </span>
+            <span>
+              <i />
+              Mục tiêu
+            </span>
+          </div>
+        </div>
+        <div className="panel">
+          <PanelTitle title="Việc cần xử lý" subtitle="Ưu tiên trong hôm nay" />
+          <div className="task-list">
+            <Task
+              tone="orange"
+              title="12 bài tập chờ chấm"
+              meta="IELTS 6.5 và Junior 4"
+            />
+            <Task
+              tone="red"
+              title="3 yêu cầu xin nghỉ"
+              meta="Chờ Admin xác nhận"
+            />
+            <Task
+              tone="blue"
+              title="5 hồ sơ học viên mới"
+              meta="Cần bổ sung thông tin"
+            />
+            <Task
+              tone="green"
+              title="Báo cáo tháng 8"
+              meta="Đã sẵn sàng xuất file"
+            />
+          </div>
+        </div>
+      </section>
+      <section className="panel">
+        <PanelTitle
+          title="Bài tập gần đây"
+          subtitle="Theo dõi tiến độ nộp và chấm bài"
+          action="Tất cả bài tập"
+          onAction={() => go("assignments")}
+        />
+        <AssignmentTable />
+      </section>
+    </>
+  );
+}
 
-function StudentOverview({ onSubmit, onLeave, go }: { onSubmit: () => void; onLeave: () => void; go: (v: View) => void }) { return <><section className="student-hero"><div><span className="eyebrow">LỘ TRÌNH IELTS 6.5</span><h2>Bạn đang tiến rất tốt!</h2><p>Hoàn thành thêm 2 bài tập tuần này để duy trì chuỗi học tập.</p><div className="hero-actions"><button className="primary" onClick={() => go("assignments")}><BookOpen /> Xem bài tập</button><button className="secondary" onClick={onLeave}><CalendarDays /> Xin nghỉ học</button></div></div><div className="hero-score"><small>Điểm hiện tại</small><strong>8.2</strong><span>+0.4 tháng này</span></div></section><section className="stat-grid student-stats"><Stat icon={CheckCircle2} label="Đã hoàn thành" value="24/28" change="86% bài tập" tone="green"/><Stat icon={Clock3} label="Chuyên cần" value="96%" change="24/25 buổi" tone="blue"/><Stat icon={TrendingUp} label="Điểm trung bình" value="8.2" change="Top 15% lớp" tone="purple"/><Stat icon={MessageSquare} label="Nhận xét mới" value="3" change="Từ giáo viên" tone="orange"/></section><section className="dashboard-grid"><div className="panel"><PanelTitle title="Bài tập sắp đến hạn" subtitle="Ưu tiên hoàn thành trước hạn" action="Xem tất cả" onAction={() => go("assignments")}/><div className="student-assignment"><div className="assign-icon">W</div><div><strong>Writing Task 2 — Education</strong><p>IELTS Writing • Cô Mai Anh</p><span className="due"><Clock3/> Hạn nộp: 18/09 • 23:59</span></div><button className="primary compact" onClick={onSubmit}>Nộp bài</button></div><div className="student-assignment"><div className="assign-icon speaking">S</div><div><strong>Speaking — Describe a journey</strong><p>IELTS Speaking • Thầy David</p><span className="due"><Clock3/> Hạn nộp: 20/09 • 20:00</span></div><button className="secondary compact" onClick={onSubmit}>Mở bài</button></div></div><div className="panel"><PanelTitle title="Lịch học sắp tới" subtitle="Tuần này"/><div className="schedule"><div className="date-box"><b>15</b><span>T3</span></div><div><strong>IELTS Writing</strong><p>18:00–19:30 • Phòng Ocean</p></div><span className="live-pill">Ngày mai</span></div><div className="schedule"><div className="date-box"><b>17</b><span>T5</span></div><div><strong>IELTS Speaking</strong><p>18:00–19:30 • Phòng Forest</p></div></div></div></section><section className="panel"><PanelTitle title="Nhận xét gần đây" subtitle="Từ giáo viên của bạn"/><div className="feedback"><div className="avatar teacher">MA</div><div><strong>Cô Mai Anh <span>• Writing Task 1</span></strong><p>“Bố cục rõ ràng và sử dụng từ nối tốt. Em chú ý thêm cách mô tả số liệu ở đoạn 2 nhé.”</p><time>12/09/2026</time></div><b>8.5</b></div></section></>; }
+function StudentOverview({
+  onSubmit,
+  onLeave,
+  go,
+}: {
+  onSubmit: () => void;
+  onLeave: () => void;
+  go: (v: View) => void;
+}) {
+  return (
+    <>
+      <section className="student-hero">
+        <div>
+          <span className="eyebrow">LỘ TRÌNH IELTS 6.5</span>
+          <h2>Bạn đang tiến rất tốt!</h2>
+          <p>Hoàn thành thêm 2 bài tập tuần này để duy trì chuỗi học tập.</p>
+          <div className="hero-actions">
+            <button className="primary" onClick={() => go("assignments")}>
+              <BookOpen /> Xem bài tập
+            </button>
+            <button className="secondary" onClick={onLeave}>
+              <CalendarDays /> Xin nghỉ học
+            </button>
+          </div>
+        </div>
+        <div className="hero-score">
+          <small>Điểm hiện tại</small>
+          <strong>8.2</strong>
+          <span>+0.4 tháng này</span>
+        </div>
+      </section>
+      <section className="stat-grid student-stats">
+        <Stat
+          icon={CheckCircle2}
+          label="Đã hoàn thành"
+          value="24/28"
+          change="86% bài tập"
+          tone="green"
+        />
+        <Stat
+          icon={Clock3}
+          label="Chuyên cần"
+          value="96%"
+          change="24/25 buổi"
+          tone="blue"
+        />
+        <Stat
+          icon={TrendingUp}
+          label="Điểm trung bình"
+          value="8.2"
+          change="Top 15% lớp"
+          tone="purple"
+        />
+        <Stat
+          icon={MessageSquare}
+          label="Nhận xét mới"
+          value="3"
+          change="Từ giáo viên"
+          tone="orange"
+        />
+      </section>
+      <section className="dashboard-grid">
+        <div className="panel">
+          <PanelTitle
+            title="Bài tập sắp đến hạn"
+            subtitle="Ưu tiên hoàn thành trước hạn"
+            action="Xem tất cả"
+            onAction={() => go("assignments")}
+          />
+          <div className="student-assignment">
+            <div className="assign-icon">W</div>
+            <div>
+              <strong>Writing Task 2 — Education</strong>
+              <p>IELTS Writing • Cô Mai Anh</p>
+              <span className="due">
+                <Clock3 /> Hạn nộp: 18/09 • 23:59
+              </span>
+            </div>
+            <button className="primary compact" onClick={onSubmit}>
+              Nộp bài
+            </button>
+          </div>
+          <div className="student-assignment">
+            <div className="assign-icon speaking">S</div>
+            <div>
+              <strong>Speaking — Describe a journey</strong>
+              <p>IELTS Speaking • Thầy David</p>
+              <span className="due">
+                <Clock3 /> Hạn nộp: 20/09 • 20:00
+              </span>
+            </div>
+            <button className="secondary compact" onClick={onSubmit}>
+              Mở bài
+            </button>
+          </div>
+        </div>
+        <div className="panel">
+          <PanelTitle title="Lịch học sắp tới" subtitle="Tuần này" />
+          <div className="schedule">
+            <div className="date-box">
+              <b>15</b>
+              <span>T3</span>
+            </div>
+            <div>
+              <strong>IELTS Writing</strong>
+              <p>18:00–19:30 • Phòng Ocean</p>
+            </div>
+            <span className="live-pill">Ngày mai</span>
+          </div>
+          <div className="schedule">
+            <div className="date-box">
+              <b>17</b>
+              <span>T5</span>
+            </div>
+            <div>
+              <strong>IELTS Speaking</strong>
+              <p>18:00–19:30 • Phòng Forest</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="panel">
+        <PanelTitle title="Nhận xét gần đây" subtitle="Từ giáo viên của bạn" />
+        <div className="feedback">
+          <div className="avatar teacher">MA</div>
+          <div>
+            <strong>
+              Cô Mai Anh <span>• Writing Task 1</span>
+            </strong>
+            <p>
+              “Bố cục rõ ràng và sử dụng từ nối tốt. Em chú ý thêm cách mô tả số
+              liệu ở đoạn 2 nhé.”
+            </p>
+            <time>12/09/2026</time>
+          </div>
+          <b>8.5</b>
+        </div>
+      </section>
+    </>
+  );
+}
 
-function StudentsView({ query, setQuery, list, onNew }: { query: string; setQuery: (s: string) => void; list: typeof students; onNew: () => void }) { return <><AccountManagement/><div className="section-head"><div><h2>Danh sách học viên</h2><p>248 học viên đang theo học tại IPA Academy.</p></div><button className="primary" onClick={onNew}><Plus/> Thêm học viên</button></div><div className="panel"><div className="toolbar"><label className="search"><Search/><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Tìm theo tên, mã hoặc lớp..."/></label><button className="secondary">Tất cả lớp</button><button className="secondary">Trạng thái</button></div><div className="student-table"><div className="table-row table-header"><span>Học viên</span><span>Lớp học</span><span>Chuyên cần</span><span>Điểm TB</span><span>Trạng thái</span></div>{list.map(s => <button className="table-row" key={s.code}><span className="student-name"><i style={{ background: s.color }}>{s.initials}</i><em><strong>{s.name}</strong><small>{s.code}</small></em></span><span>{s.class}</span><span><b>{s.attendance}%</b><progress value={s.attendance} max="100"/></span><span className="score-badge">{s.score}</span><span><mark className={s.status === "Cần lưu ý" ? "warning" : ""}>{s.status}</mark></span></button>)}</div></div></>; }
+function StudentsView({
+  query,
+  setQuery,
+  list,
+  onNew,
+}: {
+  query: string;
+  setQuery: (s: string) => void;
+  list: typeof students;
+  onNew: () => void;
+}) {
+  return (
+    <>
+      <AccountManagement />
+      <div className="section-head">
+        <div>
+          <h2>Danh sách học viên</h2>
+          <p>248 học viên đang theo học tại IPA Academy.</p>
+        </div>
+        <button className="primary" onClick={onNew}>
+          <Plus /> Thêm học viên
+        </button>
+      </div>
+      <div className="panel">
+        <div className="toolbar">
+          <label className="search">
+            <Search />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Tìm theo tên, mã hoặc lớp..."
+            />
+          </label>
+          <button className="secondary">Tất cả lớp</button>
+          <button className="secondary">Trạng thái</button>
+        </div>
+        <div className="student-table">
+          <div className="table-row table-header">
+            <span>Học viên</span>
+            <span>Lớp học</span>
+            <span>Chuyên cần</span>
+            <span>Điểm TB</span>
+            <span>Trạng thái</span>
+          </div>
+          {list.map((s) => (
+            <button className="table-row" key={s.code}>
+              <span className="student-name">
+                <i style={{ background: s.color }}>{s.initials}</i>
+                <em>
+                  <strong>{s.name}</strong>
+                  <small>{s.code}</small>
+                </em>
+              </span>
+              <span>{s.class}</span>
+              <span>
+                <b>{s.attendance}%</b>
+                <progress value={s.attendance} max="100" />
+              </span>
+              <span className="score-badge">{s.score}</span>
+              <span>
+                <mark className={s.status === "Cần lưu ý" ? "warning" : ""}>
+                  {s.status}
+                </mark>
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
 
-function AssignmentsView({ admin, onNew }: { admin: boolean; onNew: () => void }) { return <><div className="section-head"><div><h2>{admin ? "Quản lý bài tập" : "Bài tập của tôi"}</h2><p>{admin ? "Giao bài, theo dõi tiến độ và phản hồi cho học viên." : "Hoàn thành bài tập và xem phản hồi từ giáo viên."}</p></div><button className="primary" onClick={onNew}>{admin ? <><Plus/> Giao bài mới</> : <><Upload/> Nộp bài</>}</button></div><div className="filter-tabs"><button className="active">Đang thực hiện <b>2</b></button><button>Chờ chấm <b>1</b></button><button>Đã hoàn thành <b>12</b></button></div><div className="assignment-cards">{assignments.map((a, i) => <article className="assignment-card" key={a.title}><div className={`assign-icon i${i}`}>{a.icon}</div><div className="assignment-main"><div className="card-top"><mark className={a.status === "Sắp hết hạn" ? "warning" : a.status === "Chờ chấm" ? "info" : ""}>{a.status}</mark><span><Clock3/> Hạn {a.due}</span></div><h3>{a.title}</h3><p>{a.class}</p><div className="submission-progress"><div><span>{admin ? "Đã nộp" : "Tiến độ"}</span><strong>{admin ? `${a.submitted}/${a.total}` : i === 0 ? "Chưa nộp" : "Đã nộp"}</strong></div><progress value={admin ? a.submitted : i ? 100 : 15} max={admin ? a.total : 100}/></div></div><button className={admin ? "secondary compact" : "primary compact"} onClick={onNew}>{admin ? (i === 2 ? "Chấm bài" : "Chi tiết") : (i ? "Xem phản hồi" : "Nộp bài")}</button></article>)}</div></>; }
+function AssignmentsView({
+  admin,
+  onNew,
+}: {
+  admin: boolean;
+  onNew: () => void;
+}) {
+  return (
+    <>
+      <div className="section-head">
+        <div>
+          <h2>{admin ? "Quản lý bài tập" : "Bài tập của tôi"}</h2>
+          <p>
+            {admin
+              ? "Giao bài, theo dõi tiến độ và phản hồi cho học viên."
+              : "Hoàn thành bài tập và xem phản hồi từ giáo viên."}
+          </p>
+        </div>
+        <button className="primary" onClick={onNew}>
+          {admin ? (
+            <>
+              <Plus /> Giao bài mới
+            </>
+          ) : (
+            <>
+              <Upload /> Nộp bài
+            </>
+          )}
+        </button>
+      </div>
+      <div className="filter-tabs">
+        <button className="active">
+          Đang thực hiện <b>2</b>
+        </button>
+        <button>
+          Chờ chấm <b>1</b>
+        </button>
+        <button>
+          Đã hoàn thành <b>12</b>
+        </button>
+      </div>
+      <div className="assignment-cards">
+        {assignments.map((a, i) => (
+          <article className="assignment-card" key={a.title}>
+            <div className={`assign-icon i${i}`}>{a.icon}</div>
+            <div className="assignment-main">
+              <div className="card-top">
+                <mark
+                  className={
+                    a.status === "Sắp hết hạn"
+                      ? "warning"
+                      : a.status === "Chờ chấm"
+                        ? "info"
+                        : ""
+                  }
+                >
+                  {a.status}
+                </mark>
+                <span>
+                  <Clock3 /> Hạn {a.due}
+                </span>
+              </div>
+              <h3>{a.title}</h3>
+              <p>{a.class}</p>
+              <div className="submission-progress">
+                <div>
+                  <span>{admin ? "Đã nộp" : "Tiến độ"}</span>
+                  <strong>
+                    {admin
+                      ? `${a.submitted}/${a.total}`
+                      : i === 0
+                        ? "Chưa nộp"
+                        : "Đã nộp"}
+                  </strong>
+                </div>
+                <progress
+                  value={admin ? a.submitted : i ? 100 : 15}
+                  max={admin ? a.total : 100}
+                />
+              </div>
+            </div>
+            <button
+              className={admin ? "secondary compact" : "primary compact"}
+              onClick={onNew}
+            >
+              {admin
+                ? i === 2
+                  ? "Chấm bài"
+                  : "Chi tiết"
+                : i
+                  ? "Xem phản hồi"
+                  : "Nộp bài"}
+            </button>
+          </article>
+        ))}
+      </div>
+    </>
+  );
+}
 
-function ReportsView({ admin }: { admin: boolean }) { return <><div className="section-head"><div><h2>{admin ? "Báo cáo học tập" : "Tiến độ của tôi"}</h2><p>Dữ liệu tổng hợp từ lịch sử học tập, chuyên cần và kết quả bài tập.</p></div>{admin && <button className="secondary"><FileText/> Xuất báo cáo</button>}</div><section className="report-summary"><ProgressRing value={86} label="Hoàn thành bài tập"/><ProgressRing value={96} label="Chuyên cần"/><div className="report-copy"><span className="eyebrow">ĐÁNH GIÁ THÁNG 9</span><h2>{admin ? "Toàn học viện đang tiến bộ ổn định" : "Bạn đang đi đúng hướng"}</h2><p>{admin ? "82% học viên có điểm số tăng hoặc duy trì trong 30 ngày gần nhất." : "Điểm Writing tăng 0.6 và chuyên cần duy trì trên 95%. Hãy tập trung thêm vào Speaking."}</p><div className="skill-bars"><label><span>Writing <b>8.5</b></span><progress value="85" max="100"/></label><label><span>Speaking <b>7.4</b></span><progress value="74" max="100"/></label><label><span>Reading <b>8.0</b></span><progress value="80" max="100"/></label></div></div></section><section className="panel"><PanelTitle title="Biểu đồ tiến bộ" subtitle="So sánh điểm số qua từng tháng"/><div className="large-chart"><ResponsiveContainer width="100%" height={310}><LineChart data={progressData}><CartesianGrid strokeDasharray="4 6" vertical={false} stroke="#e7ecf5"/><XAxis dataKey="month" axisLine={false} tickLine={false}/><YAxis domain={[5,10]} axisLine={false} tickLine={false}/><Tooltip/><Line type="monotone" dataKey="score" name="Học viên" stroke="#1752c8" strokeWidth={4} dot={{ r: 5, fill: "white", strokeWidth: 3 }}/><Line type="monotone" dataKey="classAvg" name="Trung bình lớp" stroke="#a8b5c8" strokeWidth={2} strokeDasharray="7 6"/></LineChart></ResponsiveContainer></div></section></>; }
+function ReportsView({ admin }: { admin: boolean }) {
+  return (
+    <>
+      <div className="section-head">
+        <div>
+          <h2>{admin ? "Báo cáo học tập" : "Tiến độ của tôi"}</h2>
+          <p>
+            Dữ liệu tổng hợp từ lịch sử học tập, chuyên cần và kết quả bài tập.
+          </p>
+        </div>
+        {admin && (
+          <button className="secondary">
+            <FileText /> Xuất báo cáo
+          </button>
+        )}
+      </div>
+      <section className="report-summary">
+        <ProgressRing value={86} label="Hoàn thành bài tập" />
+        <ProgressRing value={96} label="Chuyên cần" />
+        <div className="report-copy">
+          <span className="eyebrow">ĐÁNH GIÁ THÁNG 9</span>
+          <h2>
+            {admin
+              ? "Toàn học viện đang tiến bộ ổn định"
+              : "Bạn đang đi đúng hướng"}
+          </h2>
+          <p>
+            {admin
+              ? "82% học viên có điểm số tăng hoặc duy trì trong 30 ngày gần nhất."
+              : "Điểm Writing tăng 0.6 và chuyên cần duy trì trên 95%. Hãy tập trung thêm vào Speaking."}
+          </p>
+          <div className="skill-bars">
+            <label>
+              <span>
+                Writing <b>8.5</b>
+              </span>
+              <progress value="85" max="100" />
+            </label>
+            <label>
+              <span>
+                Speaking <b>7.4</b>
+              </span>
+              <progress value="74" max="100" />
+            </label>
+            <label>
+              <span>
+                Reading <b>8.0</b>
+              </span>
+              <progress value="80" max="100" />
+            </label>
+          </div>
+        </div>
+      </section>
+      <section className="panel">
+        <PanelTitle
+          title="Biểu đồ tiến bộ"
+          subtitle="So sánh điểm số qua từng tháng"
+        />
+        <div className="large-chart">
+          <ResponsiveContainer width="100%" height={310}>
+            <LineChart data={progressData}>
+              <CartesianGrid
+                strokeDasharray="4 6"
+                vertical={false}
+                stroke="#e7ecf5"
+              />
+              <XAxis dataKey="month" axisLine={false} tickLine={false} />
+              <YAxis domain={[5, 10]} axisLine={false} tickLine={false} />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="score"
+                name="Học viên"
+                stroke="#1752c8"
+                strokeWidth={4}
+                dot={{ r: 5, fill: "white", strokeWidth: 3 }}
+              />
+              <Line
+                type="monotone"
+                dataKey="classAvg"
+                name="Trung bình lớp"
+                stroke="#a8b5c8"
+                strokeWidth={2}
+                strokeDasharray="7 6"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
+    </>
+  );
+}
 
-function LeaveView({ onNew }: { onNew: () => void }) { return <><div className="section-head"><div><h2>Xin nghỉ học</h2><p>Gửi yêu cầu và theo dõi trạng thái xác nhận từ học vụ.</p></div><button className="primary" onClick={onNew}><Plus/> Tạo yêu cầu</button></div><section className="leave-note"><CalendarDays/><div><strong>Lưu ý khi xin nghỉ</strong><p>Vui lòng gửi yêu cầu trước giờ học tối thiểu 4 tiếng. Học vụ sẽ phản hồi trong ngày.</p></div></section><div className="panel"><PanelTitle title="Lịch sử yêu cầu" subtitle="Các yêu cầu nghỉ học gần đây"/><div className="leave-history"><article><div className="date-box"><b>05</b><span>T9</span></div><div><strong>IELTS Speaking • 18:00–19:30</strong><p>Lý do: Việc gia đình</p></div><mark>Đã duyệt</mark></article><article><div className="date-box"><b>22</b><span>T8</span></div><div><strong>IELTS Writing • 18:00–19:30</strong><p>Lý do: Sức khỏe</p></div><mark>Đã duyệt</mark></article></div></div></>; }
+function LeaveView({ onNew }: { onNew: () => void }) {
+  return (
+    <>
+      <div className="section-head">
+        <div>
+          <h2>Xin nghỉ học</h2>
+          <p>Gửi yêu cầu và theo dõi trạng thái xác nhận từ học vụ.</p>
+        </div>
+        <button className="primary" onClick={onNew}>
+          <Plus /> Tạo yêu cầu
+        </button>
+      </div>
+      <section className="leave-note">
+        <CalendarDays />
+        <div>
+          <strong>Lưu ý khi xin nghỉ</strong>
+          <p>
+            Vui lòng gửi yêu cầu trước giờ học tối thiểu 4 tiếng. Học vụ sẽ phản
+            hồi trong ngày.
+          </p>
+        </div>
+      </section>
+      <div className="panel">
+        <PanelTitle
+          title="Lịch sử yêu cầu"
+          subtitle="Các yêu cầu nghỉ học gần đây"
+        />
+        <div className="leave-history">
+          <article>
+            <div className="date-box">
+              <b>05</b>
+              <span>T9</span>
+            </div>
+            <div>
+              <strong>IELTS Speaking • 18:00–19:30</strong>
+              <p>Lý do: Việc gia đình</p>
+            </div>
+            <mark>Đã duyệt</mark>
+          </article>
+          <article>
+            <div className="date-box">
+              <b>22</b>
+              <span>T8</span>
+            </div>
+            <div>
+              <strong>IELTS Writing • 18:00–19:30</strong>
+              <p>Lý do: Sức khỏe</p>
+            </div>
+            <mark>Đã duyệt</mark>
+          </article>
+        </div>
+      </div>
+    </>
+  );
+}
 
-function Stat({ icon: Icon, label, value, change, tone }: { icon: typeof Users; label: string; value: string; change: string; tone: string }) { return <article className="stat-card"><div className={`stat-icon ${tone}`}><Icon/></div><div><span>{label}</span><strong>{value}</strong><small>{change}</small></div></article>; }
-function PanelTitle({ title, subtitle, action, onAction }: { title: string; subtitle: string; action?: string; onAction?: () => void }) { return <div className="panel-title"><div><h3>{title}</h3><p>{subtitle}</p></div>{action && <button onClick={onAction}>{action}<ChevronRight/></button>}</div>; }
-function Task({ tone, title, meta }: { tone: string; title: string; meta: string }) { return <button className="task"><i className={tone}/><span><strong>{title}</strong><small>{meta}</small></span><ChevronRight/></button>; }
-function AssignmentTable() { return <div className="compact-table">{assignments.map((a, i) => <div key={a.title}><span className={`assign-icon i${i}`}>{a.icon}</span><span><strong>{a.title}</strong><small>{a.class}</small></span><span className="hide-mobile">{a.due}</span><span><b>{a.submitted}/{a.total}</b><small>đã nộp</small></span><mark className={a.status === "Sắp hết hạn" ? "warning" : a.status === "Chờ chấm" ? "info" : ""}>{a.status}</mark></div>)}</div>; }
+function Stat({
+  icon: Icon,
+  label,
+  value,
+  change,
+  tone,
+}: {
+  icon: typeof Users;
+  label: string;
+  value: string;
+  change: string;
+  tone: string;
+}) {
+  return (
+    <article className="stat-card">
+      <div className={`stat-icon ${tone}`}>
+        <Icon />
+      </div>
+      <div>
+        <span>{label}</span>
+        <strong>{value}</strong>
+        <small>{change}</small>
+      </div>
+    </article>
+  );
+}
+function PanelTitle({
+  title,
+  subtitle,
+  action,
+  onAction,
+}: {
+  title: string;
+  subtitle: string;
+  action?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div className="panel-title">
+      <div>
+        <h3>{title}</h3>
+        <p>{subtitle}</p>
+      </div>
+      {action && (
+        <button onClick={onAction}>
+          {action}
+          <ChevronRight />
+        </button>
+      )}
+    </div>
+  );
+}
+function Task({
+  tone,
+  title,
+  meta,
+}: {
+  tone: string;
+  title: string;
+  meta: string;
+}) {
+  return (
+    <button className="task">
+      <i className={tone} />
+      <span>
+        <strong>{title}</strong>
+        <small>{meta}</small>
+      </span>
+      <ChevronRight />
+    </button>
+  );
+}
+function AssignmentTable() {
+  return (
+    <div className="compact-table">
+      {assignments.map((a, i) => (
+        <div key={a.title}>
+          <span className={`assign-icon i${i}`}>{a.icon}</span>
+          <span>
+            <strong>{a.title}</strong>
+            <small>{a.class}</small>
+          </span>
+          <span className="hide-mobile">{a.due}</span>
+          <span>
+            <b>
+              {a.submitted}/{a.total}
+            </b>
+            <small>đã nộp</small>
+          </span>
+          <mark
+            className={
+              a.status === "Sắp hết hạn"
+                ? "warning"
+                : a.status === "Chờ chấm"
+                  ? "info"
+                  : ""
+            }
+          >
+            {a.status}
+          </mark>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-function Modal({ type, close, done }: { type: "student" | "assignment" | "submit" | "leave"; close: () => void; done: (s: string) => void }) { const map = { student: ["Thêm học viên mới", "Lưu học viên"], assignment: ["Giao bài tập mới", "Giao bài"], submit: ["Nộp bài tập", "Xác nhận nộp"], leave: ["Tạo yêu cầu nghỉ học", "Gửi yêu cầu"] } as const; const success = { student: "Đã thêm học viên mới.", assignment: "Đã giao bài tập cho lớp.", submit: "Bài tập đã được nộp thành công.", leave: "Yêu cầu nghỉ học đã được gửi." }[type]; return <div className="modal-layer" role="dialog" aria-modal="true"><button className="modal-backdrop" onClick={close} aria-label="Đóng"/><form className="modal" onSubmit={e => { e.preventDefault(); done(success); }}><div className="modal-head"><div><span>{type === "student" ? <UserRound/> : type === "leave" ? <CalendarDays/> : <FileText/>}</span><h2>{map[type][0]}</h2></div><button type="button" onClick={close}><X/></button></div>{type === "student" && <div className="form-grid"><label>Họ và tên<input required placeholder="Nguyễn Văn A"/></label><label>Ngày sinh<input type="date" required/></label><label>Số điện thoại<input placeholder="09xx xxx xxx"/></label><label>Email<input type="email" placeholder="student@email.com"/></label><label className="full">Lớp học<select><option>IELTS 6.5 • I67-A</option><option>Junior 4 • J4-B</option></select></label></div>}{type === "assignment" && <div className="form-grid"><label className="full">Tên bài tập<input required placeholder="Ví dụ: Writing Task 2 — Education"/></label><label>Lớp học<select><option>IELTS 6.5 • I67-A</option><option>Junior 4 • J4-B</option></select></label><label>Hạn nộp<input type="datetime-local" required/></label><label className="full">Hướng dẫn<textarea rows={4} placeholder="Mô tả yêu cầu bài tập..."/></label></div>}{type === "submit" && <div className="submit-box"><div className="selected-work"><div className="assign-icon">W</div><span><strong>Writing Task 2 — Education</strong><small>Hạn nộp: 18/09/2026 • 23:59</small></span></div><label className="upload-zone"><Upload/><strong>Kéo thả tệp vào đây</strong><span>hoặc bấm để chọn PDF, DOCX, JPG • tối đa 20MB</span><input type="file"/></label><label>Lời nhắn cho giáo viên<textarea rows={3} placeholder="Nhập lời nhắn (không bắt buộc)..."/></label></div>}{type === "leave" && <div className="form-grid"><label className="full">Buổi học<select><option>15/09 • IELTS Writing • 18:00</option><option>17/09 • IELTS Speaking • 18:00</option></select></label><label className="full">Lý do<select><option>Sức khỏe</option><option>Việc gia đình</option><option>Lý do khác</option></select></label><label className="full">Ghi chú<textarea rows={4} placeholder="Mô tả thêm để học vụ hỗ trợ..."/></label></div>}<div className="modal-actions"><button type="button" className="secondary" onClick={close}>Hủy</button><button className="primary" type="submit"><Send/>{map[type][1]}</button></div></form></div>; }
+function Modal({
+  type,
+  close,
+  done,
+}: {
+  type: "student" | "assignment" | "submit" | "leave";
+  close: () => void;
+  done: (s: string) => void;
+}) {
+  const map = {
+    student: ["Thêm học viên mới", "Lưu học viên"],
+    assignment: ["Giao bài tập mới", "Giao bài"],
+    submit: ["Nộp bài tập", "Xác nhận nộp"],
+    leave: ["Tạo yêu cầu nghỉ học", "Gửi yêu cầu"],
+  } as const;
+  const success = {
+    student: "Đã thêm học viên mới.",
+    assignment: "Đã giao bài tập cho lớp.",
+    submit: "Bài tập đã được nộp thành công.",
+    leave: "Yêu cầu nghỉ học đã được gửi.",
+  }[type];
+  return (
+    <div className="modal-layer" role="dialog" aria-modal="true">
+      <button className="modal-backdrop" onClick={close} aria-label="Đóng" />
+      <form
+        className="modal"
+        onSubmit={(e) => {
+          e.preventDefault();
+          done(success);
+        }}
+      >
+        <div className="modal-head">
+          <div>
+            <span>
+              {type === "student" ? (
+                <UserRound />
+              ) : type === "leave" ? (
+                <CalendarDays />
+              ) : (
+                <FileText />
+              )}
+            </span>
+            <h2>{map[type][0]}</h2>
+          </div>
+          <button type="button" onClick={close}>
+            <X />
+          </button>
+        </div>
+        {type === "student" && (
+          <div className="form-grid">
+            <label>
+              Họ và tên
+              <input required placeholder="Nguyễn Văn A" />
+            </label>
+            <label>
+              Ngày sinh
+              <input type="date" required />
+            </label>
+            <label>
+              Số điện thoại
+              <input placeholder="09xx xxx xxx" />
+            </label>
+            <label>
+              Email
+              <input type="email" placeholder="student@email.com" />
+            </label>
+            <label className="full">
+              Lớp học
+              <select>
+                <option>IELTS 6.5 • I67-A</option>
+                <option>Junior 4 • J4-B</option>
+              </select>
+            </label>
+          </div>
+        )}
+        {type === "assignment" && (
+          <div className="form-grid">
+            <label className="full">
+              Tên bài tập
+              <input required placeholder="Ví dụ: Writing Task 2 — Education" />
+            </label>
+            <label>
+              Lớp học
+              <select>
+                <option>IELTS 6.5 • I67-A</option>
+                <option>Junior 4 • J4-B</option>
+              </select>
+            </label>
+            <label>
+              Hạn nộp
+              <input type="datetime-local" required />
+            </label>
+            <label className="full">
+              Hướng dẫn
+              <textarea rows={4} placeholder="Mô tả yêu cầu bài tập..." />
+            </label>
+          </div>
+        )}
+        {type === "submit" && (
+          <div className="submit-box">
+            <div className="selected-work">
+              <div className="assign-icon">W</div>
+              <span>
+                <strong>Writing Task 2 — Education</strong>
+                <small>Hạn nộp: 18/09/2026 • 23:59</small>
+              </span>
+            </div>
+            <label className="upload-zone">
+              <Upload />
+              <strong>Kéo thả tệp vào đây</strong>
+              <span>hoặc bấm để chọn PDF, DOCX, JPG • tối đa 20MB</span>
+              <input type="file" />
+            </label>
+            <label>
+              Lời nhắn cho giáo viên
+              <textarea
+                rows={3}
+                placeholder="Nhập lời nhắn (không bắt buộc)..."
+              />
+            </label>
+          </div>
+        )}
+        {type === "leave" && (
+          <div className="form-grid">
+            <label className="full">
+              Buổi học
+              <select>
+                <option>15/09 • IELTS Writing • 18:00</option>
+                <option>17/09 • IELTS Speaking • 18:00</option>
+              </select>
+            </label>
+            <label className="full">
+              Lý do
+              <select>
+                <option>Sức khỏe</option>
+                <option>Việc gia đình</option>
+                <option>Lý do khác</option>
+              </select>
+            </label>
+            <label className="full">
+              Ghi chú
+              <textarea rows={4} placeholder="Mô tả thêm để học vụ hỗ trợ..." />
+            </label>
+          </div>
+        )}
+        <div className="modal-actions">
+          <button type="button" className="secondary" onClick={close}>
+            Hủy
+          </button>
+          <button className="primary" type="submit">
+            <Send />
+            {map[type][1]}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
