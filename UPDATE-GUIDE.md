@@ -1,4 +1,4 @@
-# Hướng dẫn cập nhật IPA Academy Student HUB v1.2.1
+# Hướng dẫn cập nhật IPA Academy Student HUB v1.3.0
 
 Áp dụng cho dự án đã kết nối theo mô hình **GitHub → Netlify → Supabase**.
 
@@ -26,7 +26,7 @@ Sao chép toàn bộ nội dung gói mới vào thư mục repository cũ, cho p
 ```bash
 git status
 git add .
-git commit -m "Update IPA Student HUB v1.2.1"
+git commit -m "Update IPA Student HUB v1.3.0"
 git push origin main
 ```
 
@@ -47,7 +47,11 @@ Chỉ chạy file mới trong `supabase/migrations` mà bạn chưa từng chạ
 2. Mở file migration mới, sao chép SQL, dán và bấm **Run** một lần.
 3. Không chạy lại `supabase/schema.sql` trên database đang có dữ liệu.
 
-Với bản v1.2.1, nếu đã chạy `20260915_weekly_schedule.sql` và `20260915_username_accounts.sql` thì không cần chạy lại SQL.
+Với bản v1.3.0, giữ nguyên các migration đã chạy trước đây và chạy thêm đúng một lần:
+
+```text
+supabase/migrations/20260918_role_portals.sql
+```
 
 ## Tài khoản Admin cố định
 
