@@ -472,7 +472,7 @@ function AssignmentLive({
         title: f.get("title"),
         instructions: f.get("instructions"),
         due_at: f.get("due_at") || null,
-        content_type: f.get("content_type"),
+        content_type: "mixed",
         resource_link: f.get("resource_link") || null,
         media_urls,
         created_by: d.teacherId,
@@ -537,15 +537,6 @@ function AssignmentLive({
             Hạn nộp
             <input name="due_at" type="datetime-local" />
           </label>
-          <label>
-            Định dạng
-            <select name="content_type">
-              <option value="text">Text</option>
-              <option value="link">Link</option>
-              <option value="media">Ảnh / Video</option>
-              <option value="mixed">Kết hợp</option>
-            </select>
-          </label>
           <label className="full">
             Nội dung
             <textarea name="instructions" rows={4} />
@@ -588,10 +579,32 @@ function AssignmentLive({
 }
 
 function GradingLive({ data: d }: { data: ReturnType<typeof useTeacherData> }) {
-  const [edit, setEdit] = useState<
+  const [classId, setClassId] = useState(""),
+    [studentId, setStudentId] = useState(""),
+    [edit, setEdit] = useState<
       Record<string, { score: string; comment: string }>
     >({}),
     [message, setMessage] = useState("");
+  useEffect(() => {
+    if (!classId && d.classes[0]) setClassId(d.classes[0].id);
+  }, [d.classes, classId]);
+  useEffect(() => setStudentId(""), [classId]);
+  const roster = d.students.filter((student) =>
+      d.members.some(
+        (member) =>
+          member.class_id === classId && member.student_id === student.id,
+      ),
+    ),
+    classAssignments = d.assignments.filter(
+      (assignment) => assignment.class_id === classId,
+    ),
+    studentSubmissions = d.submissions.filter(
+      (submission) =>
+        submission.student_id === studentId &&
+        classAssignments.some(
+          (assignment) => assignment.id === submission.assignment_id,
+        ),
+    );
   async function save(s: Submission) {
     if (!supabase) return;
     const v = edit[s.id] || {
@@ -619,82 +632,187 @@ function GradingLive({ data: d }: { data: ReturnType<typeof useTeacherData> }) {
     });
     setMessage(error ? error.message : "Đã gửi nhắc nhở riêng.");
   }
+  async function openMedia(path: string) {
+    if (!supabase) return;
+    const { data, error } = await supabase.storage
+      .from("assignment-media")
+      .createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) {
+      setMessage(error?.message || "Không mở được media.");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+  }
   return (
     <>
       <div className="section-head">
         <div>
           <h2>Chấm bài và phản hồi</h2>
-          <p>Bài nộp thực tế của học viên thuộc lớp phụ trách.</p>
+          <p>Chọn lớp, chọn học viên rồi chấm từng bài đã nộp.</p>
         </div>
       </div>
       {message && <p className="auto-note">{message}</p>}
-      <section className="panel grading-list">
-        {d.submissions.length ? (
-          d.submissions.map((s) => {
-            const p = d.students.find((x) => x.id === s.student_id),
-              a = d.assignments.find((x) => x.id === s.assignment_id),
-              v = edit[s.id] || {
-                score: String(s.score ?? ""),
-                comment: s.teacher_comment || "",
-              };
-            return (
-              <article key={s.id}>
-                <div>
-                  <b>{p?.full_name || "Học viên"}</b>
-                  <small>
-                    {a?.title} • Nộp {date(s.submitted_at)}
-                  </small>
-                </div>
-                <span className="submission-types">
-                  {s.content && (
-                    <>
-                      <FileText /> Text
-                    </>
-                  )}
-                  {s.submission_link && (
-                    <>
-                      <Link2 /> Link
-                    </>
-                  )}
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  max="10"
-                  step="0.1"
-                  value={v.score}
-                  onChange={(e) =>
-                    setEdit({
-                      ...edit,
-                      [s.id]: { ...v, score: e.target.value },
-                    })
-                  }
-                />
-                <textarea
-                  placeholder="Nhận xét cho học viên"
-                  value={v.comment}
-                  onChange={(e) =>
-                    setEdit({
-                      ...edit,
-                      [s.id]: { ...v, comment: e.target.value },
-                    })
-                  }
-                />
-                <div>
-                  <button className="secondary" onClick={() => remind(s)}>
-                    <MessageSquare /> Nhắc riêng
-                  </button>
-                  <button className="primary" onClick={() => save(s)}>
-                    Lưu điểm
-                  </button>
-                </div>
-              </article>
-            );
-          })
-        ) : (
-          <p>Chưa có bài nộp.</p>
-        )}
+      <section className="grading-class-picker">
+        {d.classes.map((classRow) => (
+          <button
+            key={classRow.id}
+            className={classId === classRow.id ? "active" : ""}
+            onClick={() => setClassId(classRow.id)}
+          >
+            <span>{classRow.code}</span>
+            <b>{classRow.name}</b>
+            <small>
+              {
+                d.members.filter((member) => member.class_id === classRow.id)
+                  .length
+              }{" "}
+              học viên
+            </small>
+          </button>
+        ))}
       </section>
+      <section className="panel grading-student-picker">
+        <h3>Danh sách học viên</h3>
+        <div>
+          {roster.map((student) => {
+            const submitted = d.submissions.filter(
+              (submission) =>
+                submission.student_id === student.id &&
+                classAssignments.some(
+                  (assignment) => assignment.id === submission.assignment_id,
+                ),
+            ).length;
+            return (
+              <button
+                key={student.id}
+                className={studentId === student.id ? "active" : ""}
+                onClick={() => setStudentId(student.id)}
+              >
+                <b>{student.full_name}</b>
+                <small>{student.student_code || student.username}</small>
+                <mark>{submitted} bài đã nộp</mark>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+      {studentId && (
+        <section className="grading-submission-list">
+          <h3>
+            Bài nộp của{" "}
+            {d.students.find((student) => student.id === studentId)?.full_name}
+          </h3>
+          {studentSubmissions.length ? (
+            studentSubmissions.map((submission) => {
+              const assignment = d.assignments.find(
+                  (item) => item.id === submission.assignment_id,
+                ),
+                value = edit[submission.id] || {
+                  score: String(submission.score ?? ""),
+                  comment: submission.teacher_comment || "",
+                };
+              return (
+                <article
+                  className="panel grading-submission-card"
+                  key={submission.id}
+                >
+                  <header>
+                    <div>
+                      <span>
+                        {d.classes.find((item) => item.id === classId)?.code}
+                      </span>
+                      <h3>{assignment?.title}</h3>
+                      <small>Nộp ngày {date(submission.submitted_at)}</small>
+                    </div>
+                    <mark>
+                      {submission.status === "graded" ? "Đã chấm" : "Chờ chấm"}
+                    </mark>
+                  </header>
+                  <div className="submitted-content">
+                    <h4>Yêu cầu bài tập</h4>
+                    <p>{assignment?.instructions || "Không có hướng dẫn."}</p>
+                    <h4>Nội dung học viên nộp</h4>
+                    <p>{submission.content || "Không có nội dung text."}</p>
+                    {submission.submission_link && (
+                      <a
+                        href={submission.submission_link}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <Link2 /> Mở link bài nộp
+                      </a>
+                    )}
+                    {(submission.media_urls || []).map((path) => (
+                      <button
+                        className="secondary"
+                        key={path}
+                        onClick={() => openMedia(path)}
+                      >
+                        <Upload /> Mở ảnh/video đính kèm
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grading-fields">
+                    <label>
+                      Điểm
+                      <input
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="0.1"
+                        value={value.score}
+                        onChange={(e) =>
+                          setEdit({
+                            ...edit,
+                            [submission.id]: {
+                              ...value,
+                              score: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </label>
+                    <label>
+                      Nhận xét
+                      <textarea
+                        rows={4}
+                        value={value.comment}
+                        onChange={(e) =>
+                          setEdit({
+                            ...edit,
+                            [submission.id]: {
+                              ...value,
+                              comment: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </label>
+                  </div>
+                  <footer>
+                    <button
+                      className="secondary"
+                      onClick={() => remind(submission)}
+                    >
+                      <MessageSquare /> Nhắc riêng
+                    </button>
+                    <button
+                      className="primary"
+                      onClick={() => save(submission)}
+                    >
+                      Lưu điểm và nhận xét
+                    </button>
+                  </footer>
+                </article>
+              );
+            })
+          ) : (
+            <section className="panel">
+              Học viên chưa có bài nộp trong lớp này.
+            </section>
+          )}
+        </section>
+      )}
     </>
   );
 }
