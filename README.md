@@ -1,6 +1,6 @@
 # IPA Academy Student HUB — GitHub + Netlify + Supabase
 
-Phiên bản 1.5.2: Quản lý học viên cho phép chọn nhiều học viên hoặc chọn toàn bộ danh sách đang lọc, sau đó gán hàng loạt vào một lớp. Thao tác bổ sung quan hệ trong `class_members` và vẫn cho phép mỗi học viên theo nhiều lớp.
+Phiên bản 1.6.0: Portal Giáo viên và Học viên hoạt động trực tiếp với Supabase. Giáo viên xem lớp/lịch, điểm danh, giao/chấm bài, nhận xét, nhắc riêng và xem biểu đồ báo cáo lớp/học viên. Học viên xem/nộp bài, nhận phản hồi, xem biểu đồ tiến bộ, khóa học, lịch và học phí. Workflow riêng tạo một bộ dữ liệu portal thống nhất.
 
 Hướng dẫn go-live đầy đủ nằm tại **`GO-LIVE-GUIDE.md`**.
 Thiết lập Admin mặc định và quản lý username nằm tại **`ADMIN-ACCOUNT-SETUP.md`**.

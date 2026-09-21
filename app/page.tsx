@@ -45,14 +45,18 @@ import { AuthLogin } from "./auth-login";
 import { AccountManagement } from "./account-management";
 import {
   CenterCalendar,
-  LearningReports,
   StaffManagement,
-  StudentCourse,
-  TeacherAssignments,
-  TeacherAttendance,
-  TeacherClasses,
   TuitionManagement,
 } from "./role-features";
+import {
+  StudentAssignmentsLive,
+  StudentCourseLive,
+  StudentReportsLive,
+  TeacherAssignmentsLive,
+  TeacherAttendanceLive,
+  TeacherClassesLive,
+  TeacherReportsLive,
+} from "./portal-live";
 import { StaffManagementLive, StudentManagementLive } from "./admin-live";
 import {AdminOverviewDb,AdminClassHubDb,CenterCalendarDb,TuitionDb} from "./admin-db-views";
 import { AppRole, getProfile, supabase } from "../lib/supabase";
@@ -531,16 +535,16 @@ export default function HomePage() {
               go={setView}
             />
           )}
-          {role === "teacher" && view === "classes" && <TeacherClasses />}
-          {role === "teacher" && view === "attendance" && <TeacherAttendance />}
+          {role === "teacher" && view === "classes" && <TeacherClassesLive />}
+          {role === "teacher" && view === "attendance" && <TeacherAttendanceLive />}
           {role === "teacher" && view === "assignments" && (
-            <TeacherAssignments />
+            <TeacherAssignmentsLive />
           )}
           {role === "teacher" && view === "grading" && (
-            <TeacherAssignments grading />
+            <TeacherAssignmentsLive grading />
           )}
           {role === "teacher" && view === "reports" && (
-            <LearningReports teacher />
+            <TeacherReportsLive />
           )}
           {role === "student" && view === "overview" && (
             <StudentOverview
@@ -550,15 +554,15 @@ export default function HomePage() {
             />
           )}
           {role === "student" && view === "assignments" && (
-            <AssignmentsView admin={false} onNew={() => setModal("submit")} />
+            <StudentAssignmentsLive />
           )}
           {role === "student" && view === "reports" && (
-            <ReportsView admin={false} />
+            <StudentReportsLive />
           )}
           {role === "student" && view === "leave" && (
             <LeaveView onNew={() => setModal("leave")} />
           )}
-          {role === "student" && view === "course" && <StudentCourse />}
+          {role === "student" && view === "course" && <StudentCourseLive />}
         </div>
       </main>
       {mobileNav && (
