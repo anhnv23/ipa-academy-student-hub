@@ -13,24 +13,53 @@ async function must(p, label) {
   return r.data;
 }
 const profiles = await must(
-  db.from("profiles").select("id,username,full_name,role,student_code"),
+  db
+    .from("profiles")
+    .select("id,username,full_name,role,student_code,active,created_at"),
   "profiles",
+);
+const authResult = await must(
+  db.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+  "auth users",
+);
+const authIds = new Set(authResult.users.map((user) => user.id));
+const validProfiles = profiles.filter(
+  (profile) => authIds.has(profile.id) && profile.active !== false,
 );
 const classes = await must(
   db.from("classes").select("id,code,name,total_sessions"),
   "classes",
 );
-const teachers = Object.fromEntries(
-  profiles.filter((x) => x.role === "teacher").map((x) => [x.username, x]),
-);
-const students = profiles
+const teacherList = validProfiles
+  .filter((x) => x.role === "teacher")
+  .sort(
+    (a, b) =>
+      String(a.created_at || "").localeCompare(String(b.created_at || "")) ||
+      a.id.localeCompare(b.id),
+  );
+const students = validProfiles
   .filter((x) => x.role === "student")
-  .sort((a, b) => a.username.localeCompare(b.username));
+  .sort(
+    (a, b) =>
+      String(a.student_code || "ZZZ").localeCompare(
+        String(b.student_code || "ZZZ"),
+      ) || a.id.localeCompare(b.id),
+  );
+if (teacherList.length < 2)
+  throw new Error(
+    `Need at least 2 active teacher profiles linked to Auth; found ${teacherList.length}`,
+  );
+if (students.length < 15)
+  throw new Error(
+    `Need at least 15 active student profiles linked to Auth; found ${students.length}`,
+  );
+const teachers = {
+  teacher01: teacherList[0],
+  teacher02: teacherList[1],
+};
 const byCode = Object.fromEntries(classes.map((x) => [x.code, x]));
 for (const code of ["I67-A", "J4-B", "COM-A"])
   if (!byCode[code]) throw new Error(`Missing class ${code}`);
-for (const user of ["teacher01", "teacher02"])
-  if (!teachers[user]) throw new Error(`Missing ${user}`);
 const clear = [
   ["teacher_reminders", "id"],
   ["submissions", "id"],
@@ -224,4 +253,10 @@ for (const [code] of Object.entries(groups)) {
 }
 console.log(
   "Portal sample ready: 3 assigned classes, 15 students, attendance, tuition, assignments, submissions, scores and comments.",
+);
+console.log(
+  `Teacher slots use existing accounts: ${teachers.teacher01.username} and ${teachers.teacher02.username}.`,
+);
+console.log(
+  `Student sample uses existing profile UUIDs from ${students[0].username} through ${students[14].username}; usernames and passwords were not changed.`,
 );

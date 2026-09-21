@@ -1,6 +1,6 @@
 # IPA Academy Student HUB — GitHub + Netlify + Supabase
 
-Phiên bản 1.6.0: Portal Giáo viên và Học viên hoạt động trực tiếp với Supabase. Giáo viên xem lớp/lịch, điểm danh, giao/chấm bài, nhận xét, nhắc riêng và xem biểu đồ báo cáo lớp/học viên. Học viên xem/nộp bài, nhận phản hồi, xem biểu đồ tiến bộ, khóa học, lịch và học phí. Workflow riêng tạo một bộ dữ liệu portal thống nhất.
+Phiên bản 1.6.1: Portal Giáo viên và Học viên hoạt động trực tiếp với Supabase. Workflow dữ liệu mẫu nhận diện tài khoản bằng UUID Auth và role hiện có, không phụ thuộc username; việc đổi tên đăng nhập không làm mất quan hệ lớp, bài tập, điểm danh, học phí hay báo cáo.
 
 Hướng dẫn go-live đầy đủ nằm tại **`GO-LIVE-GUIDE.md`**.
 Thiết lập Admin mặc định và quản lý username nằm tại **`ADMIN-ACCOUNT-SETUP.md`**.
